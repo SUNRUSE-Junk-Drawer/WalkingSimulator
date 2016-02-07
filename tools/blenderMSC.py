@@ -114,7 +114,7 @@ class ExportMSC(bpy.types.Operator):
     return {"RUNNING_MODAL"}
 
 def menu_func(self, context):
-  self.layout.operator(ExportMSC.bl_idname, text="MasPlat Cloud (.msc)")
+  self.layout.operator(ExportMSC.bl_idname, text="MasSplat Cloud (.msc)")
   
 def register():
   bpy.utils.register_class(ExportMSC)
