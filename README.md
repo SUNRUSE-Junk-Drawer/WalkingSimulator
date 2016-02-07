@@ -46,7 +46,7 @@ A Python export script is included for generating "MSC" files.  To install it:
 - Select the "blenderMSC.py" file in the "tools" directory of this repository.
 - Type "MSC" into the search box in the top left corner of the window.
 - Check the tickbox which appears in the top right corner of the 
-  "Import-Export: MSM" row.
+  "Import-Export: MSC" row.
 
 This script will export all selected objects' faces as splats.  To use it, go to
 File -> Export -> MasSplat Cloud (.msc)  
