@@ -55,6 +55,6 @@ The colour and origin of the splat are the averages of the face, while the
 radius is calculated to reach the furthest vertex from the origin.  The splats 
 can be scaled up or down using the "Splat Size Multiplier" on the left side when
 choosing where to export to.  Any modifiers or transforms will be applied before
-export.
+export.  Y and Z will be automatically swapped.
 
 Animated point clouds are currently not exportable.
