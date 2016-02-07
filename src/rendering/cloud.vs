@@ -25,7 +25,7 @@ void main() {
 	// This happens reasonably frequently.
 	var_uv = sign(local);
 	if(originDifference == vec2(0.0)) {
-		gl_Position = vec4((newOrigin + vec3(local, 0.0)) * vec3(postScale, 1.0), newOrigin.z);
+		gl_Position = vec4((newOrigin.xy + local) * postScale, -1.0, newOrigin.z);
 	} else {
 		originDifference = normalize(originDifference);
         vec2 uv = var_uv * 0.5 + 0.5;
