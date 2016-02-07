@@ -28,7 +28,8 @@ module.exports =
                     loader: "file-loader"
             ]
     plugins: [
-                new (require "webpack-cleanup-plugin") []
+                new (require "webpack-cleanup-plugin")
+                    exclude: ["index.html"]
             ,
                 new (require "extract-text-webpack-plugin") "[hash].css"
             ,
