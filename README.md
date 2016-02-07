@@ -58,3 +58,47 @@ choosing where to export to.  Any modifiers or transforms will be applied before
 export.  Y and Z will be automatically swapped.
 
 Animated point clouds are currently not exportable.
+
+## Navmeshes
+
+A navmesh is used to define where entities (including the player) can travel.
+By default, they are unable to leave the surface, "crawling" over it.  Each tile
+is a 3D triangle.  A light colour is set at each vertex.  Any two triangles 
+sharing two vertices are joined and the edge formed may be crossed from one to 
+the other.
+
+The file format is JSON-based and looks like:
+
+    {
+        "triangles": [{
+            "vertices": [{
+                "location": [4, 7, 2],
+                "color": [0.6, 0.2, 0.1]
+            }, {
+                "location": [7, 2, 9],
+                "color": [0.6, 0.2, 0.1]
+            }, 
+            {
+                "location": [10, 14, 12],
+                "color": [0.6, 0.2, 0.1]
+            }],
+            "normal": [0.7, -0.7, 0.0]
+            "edges": [{
+                "normal": [1.0, 0.0, 0.0],
+                "triangle": null
+            }, {
+                "normal": [0.0, -0.7, -0.7],
+                "triangle": 20
+            }, {
+                "normal": [0.1, 0.6, 0.2],
+                "triangle": 6
+            }]
+        }, ...]
+    }
+    
+Vertices' locations are in X, Y and Z, while their colours are in normalized
+(0...1) RGB.
+
+The "edges" array contains 3 objects describing the edges between vertices 0->1, 
+1->2 and 2->0 in order.  If "triangle" is null, the edge does not border another
+triangle.  If it is non-null, it is an index into the "triangles" array.
