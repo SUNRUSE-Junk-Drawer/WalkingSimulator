@@ -61,44 +61,65 @@ Animated point clouds are currently not exportable.
 
 ## Navmeshes
 
-A navmesh is used to define where entities (including the player) can travel.
-By default, they are unable to leave the surface, "crawling" over it.  Each tile
-is a 3D triangle.  A light colour is set at each vertex.  Any two triangles 
-sharing two vertices are joined and the edge formed may be crossed from one to 
-the other.
+Navmeshes are stored as "MSN" (MasSplat Navmesh) and are used to define where 
+entities (including the player) can travel.  By default, they are unable to 
+leave the surface, "crawling" over it.  Each tile is a 3D triangle.  A light 
+Any two triangles sharing two vertices are joined and the edge formed may be 
+crossed from one to the other, otherwise, the edge is treated as a form of wall.
 
-The file format is JSON-based and looks like:
+MSN is a binary format formed of "planes"; the X axis of the location of vertex
+A of every triangle, then the Y axis of the location of vertex B of every
+triangle and so on.  The following planes are currently defined:
 
-    {
-        "triangles": [{
-            "vertices": [{
-                "location": [4, 7, 2],
-                "color": [0.6, 0.2, 0.1]
-            }, {
-                "location": [7, 2, 9],
-                "color": [0.6, 0.2, 0.1]
-            }, 
-            {
-                "location": [10, 14, 12],
-                "color": [0.6, 0.2, 0.1]
-            }],
-            "normal": [0.7, -0.7, 0.0]
-            "edges": [{
-                "normal": [1.0, 0.0, 0.0],
-                "triangle": null
-            }, {
-                "normal": [0.0, -0.7, -0.7],
-                "triangle": 20
-            }, {
-                "normal": [0.1, 0.6, 0.2],
-                "triangle": 6
-            }]
-        }, ...]
-    }
-    
-Vertices' locations are in X, Y and Z, while their colours are in normalized
-(0...1) RGB.
+| Type    | Description                                                                                                          |
+| ------- | -------------------------------------------------------------------------------------------------------------------- |
+| float32 | The location on the X axis of the first vertex.                                                                      |
+| float32 | The location on the Y axis of the first vertex.                                                                      |
+| float32 | The location on the Z axis of the first vertex.                                                                      |
+| float32 | The location on the X axis of the second vertex.                                                                     |
+| float32 | The location on the Y axis of the second vertex.                                                                     |
+| float32 | The location on the Z axis of the second vertex.                                                                     |
+| float32 | The location on the X axis of the third vertex.                                                                      |
+| float32 | The location on the Y axis of the third vertex.                                                                      |
+| float32 | The location on the Z axis of the third vertex.                                                                      |
+| float32 | The X axis of the surface normal.                                                                                    |
+| float32 | The Y axis of the surface normal.                                                                                    |
+| float32 | The Z axis of the surface normal.                                                                                    |
+| float32 | The X axis of a vector pointing inwards from the edge between the first and second vertices.                         |
+| float32 | The Y axis of a vector pointing inwards from the edge between the first and second vertices.                         |
+| float32 | The Z axis of a vector pointing inwards from the edge between the first and second vertices.                         |
+| float32 | The X axis of a vector pointing inwards from the edge between the second and third vertices.                         |
+| float32 | The Y axis of a vector pointing inwards from the edge between the second and third vertices.                         |
+| float32 | The Z axis of a vector pointing inwards from the edge between the second and third vertices.                         |
+| float32 | The X axis of a vector pointing inwards from the edge between the third and first vertices.                          |
+| float32 | The Y axis of a vector pointing inwards from the edge between the third and first vertices.                          |
+| float32 | The Z axis of a vector pointing inwards from the edge between the third and first vertices.                          |
+| uint16  | The neighbouring triangle index over the edge between the first and second vertices.  (65535 indicates no neighbour) |
+| uint16  | The neighbouring triangle index over the edge between the second and third vertices.  (65535 indicates no neighbour) |
+| uint16  | The neighbouring triangle index over the edge between the third and first vertices.  (65535 indicates no neighbour)  |
 
-The "edges" array contains 3 objects describing the edges between vertices 0->1, 
-1->2 and 2->0 in order.  If "triangle" is null, the edge does not border another
-triangle.  If it is non-null, it is an index into the "triangles" array.
+3D space is defined as:
+
+- x: left to right
+- y: bottom to top
+- z: back to front
+
+Future versions will export vertex colour too for lighting entities on the
+navmesh.
+
+### Exporting from Blender
+
+A Python export script is included for generating "MSN" files.  To install it:
+
+- File -> User Preferences -> Add Ons
+- At the bottom, click "Install from File..."
+- Select the "blenderMSN.py" file in the "tools" directory of this repository.
+- Type "MSN" into the search box in the top left corner of the window.
+- Check the tickbox which appears in the top right corner of the 
+  "Import-Export: MSN" row.
+
+This script will export every triangle in the mesh as a navmesh tile.  To use
+it, go to File -> Export -> MasSplat Navmesh (.msc)  
+
+Only the object named "navmesh" will be exported.  Any modifiers or transforms 
+will be applied before export.  Y and Z will be automatically swapped.
