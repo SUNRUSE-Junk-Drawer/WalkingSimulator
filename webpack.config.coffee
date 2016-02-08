@@ -26,6 +26,9 @@ module.exports =
                 ,
                     test: /\.msc$/
                     loader: "file-loader"
+                ,
+                    test: /\.msn$/
+                    loader: "file-loader"
             ]
     plugins: [
                 new (require "webpack-cleanup-plugin")
