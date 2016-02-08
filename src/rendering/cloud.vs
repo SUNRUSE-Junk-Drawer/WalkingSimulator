@@ -28,7 +28,9 @@ void main() {
 		gl_Position = vec4((newOrigin.xy + local) * postScale, -1.0, newOrigin.z);
 	} else {
 		originDifference = normalize(originDifference);
+        mat2 subTransform = mat2(-originDifference.x, -originDifference.y, originDifference.y, -originDifference.x);
         vec2 uv = var_uv * 0.5 + 0.5;
-		gl_Position = vec4((mix(newOrigin.xy, oldOrigin.xy, uv.y) - local.y * originDifference + local.x * originDifference.yx * vec2(1.0, -1.0)) * postScale, -1.0, mix(newOrigin.z, oldOrigin.z, uv.y));
+		gl_Position = vec4((mix(newOrigin.xy, oldOrigin.xy, uv.y) + local * subTransform) * postScale, -1.0, mix(newOrigin.z, oldOrigin.z, uv.y));
+        var_uv = var_uv * subTransform;
 	}
 }
