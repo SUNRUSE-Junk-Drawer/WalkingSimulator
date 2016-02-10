@@ -65,22 +65,22 @@ the matrix to have been rotated by that number of radians about the Z axis.
         
         rotateZ: makeRotate 0, 1, 4, 5
         
-Given the X, Y and Z scaling factors and a matrix, calling the "scale" property
-scales the matrix by those scaling factors.
+Given a vector specifying the scaling factor on each axis and a matrix, calling
+the "scale" property scales the matrix by those scaling factors.
         
-        scale: (x, y, z, output) ->
-            output[index] *= x for index in [0...4]
-            output[index] *= y for index in [4...8]
-            output[index] *= z for index in [8...12]
+        scale: (vector, output) ->
+            output[index] *= vector[0] for index in [0...4]
+            output[index] *= vector[1] for index in [4...8]
+            output[index] *= vector[2] for index in [8...12]
             return
 
-Given the X, Y and Z values to translate by and a matrix to translate, calling
-the "translate" property applies that translation to that matrix.
+Given a vector specifying a translation and a matrix to translate, calling the 
+"translate" property applies that translation to that matrix.
             
-        translate: (x, y, z, output) ->
-            output[3] += x
-            output[7] += y
-            output[11] += z
+        translate: (vector, output) ->
+            output[3] += vector[0]
+            output[7] += vector[1]
+            output[11] += vector[2]
             return
             
 Given a matrix, X, Y, Z and W values (defaulting to 0, 0, 0 and 1 respectively
