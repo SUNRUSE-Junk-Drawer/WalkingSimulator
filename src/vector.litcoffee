@@ -101,7 +101,9 @@ two vectors.
 
     tempA = []
     tempB = []
-    dot = (a, b) -> sum multiply.vector a, b, tempA
+    dot = (a, b) -> 
+        multiply.vector a, b, tempA
+        sum tempA
     
 Given a vector, calling the "magnitudeSquared" property returns the square of
 its magnitude.
@@ -131,7 +133,7 @@ normalized/unit length version of the input to the output.  The magnitude of the
 input vector is also returned.
 
     normalize = (input, output) ->
-        len = magnitudeSquared input
+        len = magnitude input
         divide.byScalar input, len, output
         len
      
