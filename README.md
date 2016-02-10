@@ -67,45 +67,14 @@ leave the surface, "crawling" over it.  Each tile is a 3D triangle.  A light
 Any two triangles sharing two vertices are joined and the edge formed may be 
 crossed from one to the other, otherwise, the edge is treated as a form of wall.
 
-MSN is a binary format formed of "planes"; the X axis of the location of vertex
-A of every triangle, then the Y axis of the location of vertex B of every
-triangle and so on.  The following planes are currently defined:
+MSN is a binary format.  It is comprised of:
 
-| Type    | Description                                                                                                          |
-| ------- | -------------------------------------------------------------------------------------------------------------------- |
-| float32 | The location on the X axis of the first vertex.                                                                      |
-| float32 | The location on the Y axis of the first vertex.                                                                      |
-| float32 | The location on the Z axis of the first vertex.                                                                      |
-| float32 | The location on the X axis of the second vertex.                                                                     |
-| float32 | The location on the Y axis of the second vertex.                                                                     |
-| float32 | The location on the Z axis of the second vertex.                                                                     |
-| float32 | The location on the X axis of the third vertex.                                                                      |
-| float32 | The location on the Y axis of the third vertex.                                                                      |
-| float32 | The location on the Z axis of the third vertex.                                                                      |
-| float32 | The X axis of the surface normal.                                                                                    |
-| float32 | The Y axis of the surface normal.                                                                                    |
-| float32 | The Z axis of the surface normal.                                                                                    |
-| float32 | The X axis of a vector pointing inwards from the edge between the first and second vertices.                         |
-| float32 | The Y axis of a vector pointing inwards from the edge between the first and second vertices.                         |
-| float32 | The Z axis of a vector pointing inwards from the edge between the first and second vertices.                         |
-| float32 | The X axis of a vector pointing inwards from the edge between the second and third vertices.                         |
-| float32 | The Y axis of a vector pointing inwards from the edge between the second and third vertices.                         |
-| float32 | The Z axis of a vector pointing inwards from the edge between the second and third vertices.                         |
-| float32 | The X axis of a vector pointing inwards from the edge between the third and first vertices.                          |
-| float32 | The Y axis of a vector pointing inwards from the edge between the third and first vertices.                          |
-| float32 | The Z axis of a vector pointing inwards from the edge between the third and first vertices.                          |
-| uint16  | The neighbouring triangle index over the edge between the first and second vertices.  (65535 indicates no neighbour) |
-| uint16  | The neighbouring triangle index over the edge between the second and third vertices.  (65535 indicates no neighbour) |
-| uint16  | The neighbouring triangle index over the edge between the third and first vertices.  (65535 indicates no neighbour)  |
-
-3D space is defined as:
-
-- x: left to right
-- y: bottom to top
-- z: back to front
-
-Future versions will export vertex colour too for lighting entities on the
-navmesh.
+| Type    | Num.              | Description                                                |
+| ------- | ----------------- | ---------------------------------------------------------- |
+| uint16  | 1                 | The number of vertices defined.                            |
+| uint16  | 1                 | The number of triangles defined.                           |
+| float32 | 3x num. vertices  | The X, Y and Z of each vertex.                             |
+| uint16  | 3x num. triangles | The first, second and third vertex index of each triangle. |
 
 ### Exporting from Blender
 

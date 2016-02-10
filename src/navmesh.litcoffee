@@ -2,6 +2,8 @@ On calling with the path to a MSN file and a callback, reads the MSN file and
 executes the callback with an object as the argument.
     
     handleError = require "./handleError.litcoffee"
+    vector = require "./vector.litcoffee"
+    plane = require "./plane.litcoffee"
     
     module.exports = (path, callback) ->
         request = new XMLHttpRequest()
@@ -10,96 +12,104 @@ executes the callback with an object as the argument.
         request.onreadystatechange = ->
             if request.readyState is 4
                 if request.status is 200
-                    triangles = request.response.byteLength / (3 * 3 * 4 + 3 * 4 + 3 * 3 * 4 + 3 * 2)
+                    header = new Uint16Array request.response, 0, 2
+                    vertexData = new Float32Array request.response, 4, header[0] * 3
+                    indices = new Uint16Array request.response, 4 + header[0] * 4 * 3, header[1] * 3
                 
-                    vertices = for vertex in [0...3]
-                        for axis in [0...3]
-                            new Float32Array request.response, (vertex * 3 + axis) * 4 * triangles, triangles
-                    
-                    normals = for axis in [0...3]
-                        new Float32Array request.response, (3 * 3 + axis) * 4 * triangles, triangles
-                    
-                    edgeNormals = for edge in [0...3]
-                        for axis in [0...3]
-                            new Float32Array request.response, (3 * 3 + 3 + edge * 3 + axis) * 4 * triangles, triangles
-
-                    neighbors = for edge in [0...3]
-                        new Uint16Array request.response, ((3 * 3 + 3 + 3 * 3) * 4 + edge * 2) * triangles, triangles
-                            
-                    dot = (x1, y1, z1, x2, y2, z2) -> x1 * x2 + y1 * y2 + z1 * z2
-                    
-                    distanceTo = (plane, vertex, obj) -> dot obj.location[0] - vertices[vertex][0][obj.triangle], obj.location[1] - vertices[vertex][1][obj.triangle], obj.location[2] - vertices[vertex][2][obj.triangle], plane[0][obj.triangle], plane[1][obj.triangle], plane[2][obj.triangle]
-                                           
+                    vertices = for i in [0...vertexData.length] by 3
+                        [
+                            vertexData[i]
+                            vertexData[i + 1]
+                            vertexData[i + 2]
+                        ]
+                
+                    triangles = for i in [0...indices.length] by 3
+                        plane: plane.fromTriangle vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]]
+                        indices: [
+                            indices[i]
+                            indices[i + 1]
+                            indices[i + 2]
+                        ]
+                
+                    for triangle in triangles
+                        triangle.edges = for edge in [0...3]
+                            vertexA = triangle.indices[edge]
+                            vertexB = triangle.indices[(edge + 1) % 3]
+                            vertexC = []
+                            vector.add.vector vertices[vertexA], triangle.plane.normal, vertexC
+                            neighbor = null
+                            for other in triangles
+                                if triangle is other then continue
+                                if vertexA not in other.indices then continue
+                                if vertexB not in other.indices then continue
+                                neighbor = other
+                                vector.add.vector vertexC, other.plane.normal, vertexC
+                                break
+                            neighbor: neighbor
+                            plane: plane.fromTriangle vertices[vertexA], vertexC, vertices[vertexB]
+                           
+                    console.log triangles
+                           
                     callback
                     
 Call the "constrain" property with an object containing:
 
 - location: An array of three numbers specifying the X, Y and Z moved to.
-- triangle: An integer specifying the triangle index which contained the entity
-            last frame.
+- triangle: A reference to the triangle the entity is currently in.  If not
+            known, falsy.
             
 This will modify these properties to constrain the entity to the surface of the 
 navmesh.
                     
                         constrain: (obj) ->
+                            if not obj.triangle
+                                obj.triangle = triangles[0]
+                            
                             for iterations in [0...25]
-                                distanceA = distanceTo edgeNormals[0], 0, obj
-                                distanceB = distanceTo edgeNormals[1], 1, obj
-                                distanceC = distanceTo edgeNormals[2], 2, obj
+                                distanceA = plane.distance obj.triangle.edges[0].plane, obj.location
+                                distanceB = plane.distance obj.triangle.edges[1].plane, obj.location
+                                distanceC = plane.distance obj.triangle.edges[2].plane, obj.location
                                 if distanceA >= 0 and distanceB >= 0 and distanceC >= 0 
                                     break
-                                
-                                neighborA = neighbors[0][obj.triangle]
-                                neighborB = neighbors[1][obj.triangle]                                
-                                neighborC = neighbors[2][obj.triangle]
 
-                                if distanceA < 0 and neighborA isnt 65535
-                                    obj.triangle = neighborA
+                                if distanceA < 0 and obj.triangle.edges[0].neighbor
+                                    obj.triangle = obj.triangle.edges[0].neighbor
                                     continue
                                     
-                                if distanceB < 0 and neighborB isnt 65535
-                                    obj.triangle = neighborB
+                                if distanceB < 0 and obj.triangle.edges[1].neighbor
+                                    obj.triangle = obj.triangle.edges[1].neighbor
                                     continue
                                     
-                                if distanceC < 0 and neighborC isnt 65535
-                                    obj.triangle = neighborC
+                                if distanceC < 0 and obj.triangle.edges[2].neighbor
+                                    obj.triangle = obj.triangle.edges[2].neighbor
                                     continue
                                 
                                 if distanceA < 0 and distanceB < 0
-                                    for axis in [0...3]
-                                        obj.location[axis] = vertices[1][axis][obj.triangle]
+                                    vector.copy vertices[obj.triangle.indices[1]], obj.location
                                     continue
                                     
                                 if distanceB < 0 and distanceC < 0
-                                    for axis in [0...3]
-                                        obj.location[axis] = vertices[2][axis][obj.triangle]
+                                    vector.copy vertices[obj.triangle.indices[2]], obj.location
                                     continue
                                     
                                 if distanceC < 0 and distanceA < 0
-                                    for axis in [0...3]
-                                        obj.location[axis] = vertices[0][axis][obj.triangle]
+                                    vector.copy vertices[obj.triangle.indices[0]], obj.location
                                     continue
 
                                 if distanceA < 0
-                                    for axis in [0...3]
-                                        obj.location[axis] -= edgeNormals[0][axis][obj.triangle] * distanceA
+                                    plane.project obj.triangle.edges[0].plane, obj.location, obj.location
                                     continue
                                     
                                 if distanceB < 0
-                                    for axis in [0...3]
-                                        obj.location[axis] -= edgeNormals[1][axis][obj.triangle] * distanceB
+                                    plane.project obj.triangle.edges[1].plane, obj.location, obj.location
                                     continue
                                         
                                 if distanceC < 0
-                                    for axis in [0...3]
-                                        obj.location[axis] -= edgeNormals[2][axis][obj.triangle] * distanceC
+                                    plane.project obj.triangle.edges[2].plane, obj.location, obj.location
                                     continue
                                     
-                            distance = distanceTo normals, 0, obj
-                            for axis in [0...3]
-                                obj.location[axis] -= normals[axis][obj.triangle] * distance
-                            return
-                            
+                            plane.project obj.triangle.plane, obj.location, obj.location
+                            return        
                 else
                     handleError "Failed to load navmesh file " + path
             return
