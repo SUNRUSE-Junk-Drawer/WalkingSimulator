@@ -48,8 +48,6 @@ executes the callback with an object as the argument.
                             neighbor: neighbor
                             plane: plane.fromTriangle vertices[vertexA], vertexC, vertices[vertexB]
                            
-                    console.log triangles
-                           
                     callback
                     
 Call the "constrain" property with an object containing:
