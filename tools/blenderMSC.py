@@ -72,38 +72,7 @@ class ExportMSC(bpy.types.Operator):
           file.write(struct.pack("B", int(green * 255)))
           file.write(struct.pack("B", int(blue * 255)))
           file.write(struct.pack("B", 0)) # We need to pack this to 4-byte alignment.
-          file.write(struct.pack("f", -radius))
-          file.write(struct.pack("f", -radius))
-          
-          file.write(struct.pack("f", x))
-          file.write(struct.pack("f", y))
-          file.write(struct.pack("f", z))
-          file.write(struct.pack("B", int(red * 255)))
-          file.write(struct.pack("B", int(green * 255)))
-          file.write(struct.pack("B", int(blue * 255)))
-          file.write(struct.pack("B", 0)) # We need to pack this to 4-byte alignment.
-          file.write(struct.pack("f", -radius))
           file.write(struct.pack("f", radius))
-          
-          file.write(struct.pack("f", x))
-          file.write(struct.pack("f", y))
-          file.write(struct.pack("f", z))
-          file.write(struct.pack("B", int(red * 255)))
-          file.write(struct.pack("B", int(green * 255)))
-          file.write(struct.pack("B", int(blue * 255)))
-          file.write(struct.pack("B", 0)) # We need to pack this to 4-byte alignment.
-          file.write(struct.pack("f", radius))
-          file.write(struct.pack("f", radius))
-          
-          file.write(struct.pack("f", x))
-          file.write(struct.pack("f", y))
-          file.write(struct.pack("f", z))
-          file.write(struct.pack("B", int(red * 255)))
-          file.write(struct.pack("B", int(green * 255)))
-          file.write(struct.pack("B", int(blue * 255)))
-          file.write(struct.pack("B", 0)) # We need to pack this to 4-byte alignment.
-          file.write(struct.pack("f", radius))
-          file.write(struct.pack("f", -radius))
     file.close()
     return {"FINISHED"}
 

@@ -20,22 +20,21 @@ directory changes, run "npm run-script watch" after "npm install".
 
 ## Point Clouds
 
-Point clouds are stored as "MSC" (MasSplat Cloud) files, which are binary vertex 
-buffers loaded directly into WebGL.  Each splat is described four times, once 
-for each vertex of the quadrilateral, clockwise from the bottom left.
+Point clouds are stored as "MSC" (MasSplat Cloud) files.  The file structure is
+binary, with the following fields repeated for each struct.
+
+| Type    | Num. | Description                                          |
+| ------- | ---- | ---------------------------------------------------- |
+| float32 | 3    | The location of the origin in world space.  (XYZ)    |
+| ubyte   | 3    | The intensities of the red, green and blue channels. |
+| ubyte   | 1    | In animated clouds, a bone ID.  Otherwise, padding.  |
+| float32 | 1    | The radius of the splat.                             |
 
 3D space is defined as:
 
 - x: left to right
 - y: bottom to top
 - z: back to front
-
-| Type    | Num. | Description                                                            |
-| ------- | ---- | ---------------------------------------------------------------------- |
-| float32 | 3    | The location of the origin in world space.  (XYZ)                      |
-| ubyte   | 3    | The intensities of the red, green and blue channels.                   |
-| ubyte   | 1    | In animated clouds, a bone ID.  Otherwise, padding.                    |
-| float32 | 2    | The location of the vertex relative to the origin in view space.  (XY) |
 
 ### Exporting from Blender
 
