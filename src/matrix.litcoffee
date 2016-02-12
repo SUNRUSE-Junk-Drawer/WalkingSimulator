@@ -3,6 +3,7 @@ Matrices are arrays of 16 numbers forming a 4x4 matrix.
     temp1 = []
     temp2 = []
     rotationTemp = []
+    vectorTemp = []
     
     makeRotate = (axis1, axis2, axis3, axis4) ->
         temp3 = []
@@ -17,6 +18,8 @@ Matrices are arrays of 16 numbers forming a 4x4 matrix.
             module.exports.multiply output, temp3, output
             return
 
+    vector = require "./vector.litcoffee"
+            
     module.exports = 
 
 Given a matrix, calling the "identity" property writes the identity matrix to 
@@ -99,6 +102,48 @@ representing the transformed vector.
                 x * matrix[8] + y * matrix[9] + z * matrix[10] + w * matrix[11]
                 x * matrix[12] + y * matrix[13] + z * matrix[14] + w * matrix[15]
             ]
+            
+Given a matrix, input vector and output vector, calling the "applyToVector"
+property writes the input vector transformed by the matrix to the output vector.
+        
+        applyToVector: (matrix, input, output) ->
+            vector.copy input, vectorTemp
+            output[0] = vectorTemp[0] * matrix[0] + vectorTemp[1] * matrix[1] + vectorTemp[2] * matrix[2] + matrix[3]
+            output[1] = vectorTemp[0] * matrix[4] + vectorTemp[1] * matrix[5] + vectorTemp[2] * matrix[6] + matrix[7]
+            output[2] = vectorTemp[0] * matrix[8] + vectorTemp[1] * matrix[9] + vectorTemp[2] * matrix[10] + matrix[11]
+            return
+            
+Given a matrix and output vector, calling the "getTranslation" property writes
+the translation applied by the matrix to the output vector.
+
+        getTranslation: (matrix, output) ->
+            output[0] = matrix[12]
+            output[1] = matrix[13]
+            output[2] = matrix[14]
+
+Given a matrix and output vector, calling the "getX" property writes the vector
+of the matrix's X axis (a scaled normal) to the output vector.
+
+        getX: (matrix, output) ->
+            output[0] = matrix[0]
+            output[1] = matrix[4]
+            output[2] = matrix[8]
+
+Given a matrix and output vector, calling the "getY" property writes the vector
+of the matrix's Y axis (a scaled normal) to the output vector.
+
+        getY: (matrix, output) ->
+            output[0] = matrix[1]
+            output[1] = matrix[5]
+            output[2] = matrix[9]
+            
+Given a matrix and output vector, calling the "getZ" property writes the vector
+of the matrix's Z axis (a scaled normal) to the output vector.
+
+        getZ: (matrix, output) ->
+            output[0] = matrix[2]
+            output[1] = matrix[6]
+            output[2] = matrix[10]
             
     module.exports.identity temp1
     module.exports.identity temp2
