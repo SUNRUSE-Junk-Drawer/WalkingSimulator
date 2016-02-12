@@ -19,6 +19,27 @@ halves of a limb to fill the gap between the start and end locations.
     midpoint = []
     joint = []
     sideNormal2 = []
+    
+    lookAt = (start, end, sideNormal, transform) ->
+        vector.subtract.vector end, start, startEndDifference
+        vector.normalize startEndDifference, startEndNormal
+        vector.cross startEndNormal, sideNormal, bendNormal
+        vector.normalize bendNormal, bendNormal
+        vector.cross bendNormal, startEndNormal, sideNormal2
+        vector.normalize sideNormal2, sideNormal2
+  
+        matrix.identity transform
+        transform[0] = sideNormal2[0]
+        transform[4] = sideNormal2[1]
+        transform[8] = sideNormal2[2]
+        transform[1] = bendNormal[0]
+        transform[5] = bendNormal[1]
+        transform[9] = bendNormal[2]
+        transform[2] = startEndNormal[0]
+        transform[6] = startEndNormal[1]
+        transform[10] = startEndNormal[2]
+        matrix.translate start, transform
+    
     module.exports = (start, end, targetLength, sideNormal, startTransform, endTransform) ->
         vector.subtract.vector end, start, startEndDifference
         vector.cross startEndDifference, sideNormal, bendNormal
@@ -33,40 +54,5 @@ halves of a limb to fill the gap between the start and end locations.
         vector.multiply.byScalar bendNormal, alongBend, joint
         vector.add.vector joint, midpoint, joint
         
-        vector.subtract.vector end, joint, startEndDifference
-        vector.normalize startEndDifference, startEndNormal
-        vector.cross sideNormal, startEndDifference, bendNormal
-        vector.normalize bendNormal, bendNormal
-        vector.cross bendNormal, startEndDifference, sideNormal2
-        vector.normalize sideNormal2, sideNormal2
-    
-        matrix.identity endTransform
-        endTransform[0] = -sideNormal2[0]
-        endTransform[1] = -sideNormal2[1]
-        endTransform[2] = sideNormal2[2]
-        endTransform[4] = -bendNormal[0]
-        endTransform[5] = -bendNormal[1]
-        endTransform[6] = bendNormal[2]
-        endTransform[8] = -startEndNormal[0]
-        endTransform[9] = -startEndNormal[1]
-        endTransform[10] = startEndNormal[2]
-        matrix.translate joint, endTransform
-        
-        vector.subtract.vector joint, start, startEndDifference
-        vector.normalize startEndDifference, startEndNormal
-        vector.cross sideNormal, startEndDifference, bendNormal
-        vector.normalize bendNormal, bendNormal
-        vector.cross bendNormal, startEndDifference, sideNormal2
-        vector.normalize sideNormal2, sideNormal2
-        
-        matrix.identity startTransform
-        startTransform[0] = -sideNormal2[0]
-        startTransform[1] = -sideNormal2[1]
-        startTransform[2] = sideNormal2[2]
-        startTransform[4] = -bendNormal[0]
-        startTransform[5] = -bendNormal[1]
-        startTransform[6] = bendNormal[2]
-        startTransform[8] = -startEndNormal[0]
-        startTransform[9] = -startEndNormal[1]
-        startTransform[10] = startEndNormal[2]
-        matrix.translate start, startTransform
+        lookAt start, joint, sideNormal, startTransform
+        lookAt joint, end, sideNormal, endTransform
