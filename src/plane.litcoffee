@@ -20,7 +20,7 @@ object is returned.
         output.normal = output.normal or []
         vector.subtract.vector a, b, tempA
         vector.subtract.vector a, c, tempB
-        vector.cross tempA, tempB, output.normal
+        vector.cross tempB, tempA, output.normal
         vector.normalize output.normal, output.normal
         output.distance = vector.dot output.normal, a
         output
