@@ -18,25 +18,7 @@ clouds of "splats", which are billboards textured to look like paint strokes.
 If you would like to have your install automatically rebuild when the "src"
 directory changes, run "npm run-script watch" after "npm install".
 
-## Point Clouds
-
-Point clouds are stored as "MSC" (MasSplat Cloud) files.  The file structure is
-binary, with the following fields repeated for each struct.
-
-| Type    | Num. | Description                                          |
-| ------- | ---- | ---------------------------------------------------- |
-| float32 | 3    | The location of the origin in world space.  (XYZ)    |
-| ubyte   | 3    | The intensities of the red, green and blue channels. |
-| ubyte   | 1    | In animated clouds, a bone ID.  Otherwise, padding.  |
-| float32 | 1    | The radius of the splat.                             |
-
-3D space is defined as:
-
-- x: left to right
-- y: bottom to top
-- z: back to front
-
-### Exporting from Blender
+### Exporting point clouds from Blender
 
 A Python export script is included for generating "MSC" files.  To install it:
 
