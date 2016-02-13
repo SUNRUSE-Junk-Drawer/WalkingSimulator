@@ -286,6 +286,20 @@ to the output vector.
         multiply.byScalar normal, (coefficient * 2), reflectTemp
         subtract.vector input, reflectTemp, output
         
+# straighten
+
+- An input vector.
+- An input normal vector.
+- An output vector.
+
+Writes the input vector to the output vector, but "straightened" along the
+surface normal.  For instance, a vector pointing up and right with a normal 
+facing right would output a vector pointing only right.
+
+    straighten = (input, normal, output) ->
+        matched = dot input, normal
+        multiply.byScalar normal, matched, output
+        
 # flatten
 
 - An input vector.
@@ -298,8 +312,7 @@ would output a vector pointing only up.
 
     flattenTemp = []
     flatten = (input, normal, output) ->
-        matched = dot input, normal
-        multiply.byScalar normal, matched, flattenTemp
+        straighten input, normal, flattenTemp
         subtract.vector input, flattenTemp, output
         
     module.exports = { 
@@ -310,5 +323,5 @@ would output a vector pointing only up.
             distanceSquared, distance
             normalize
             interpolate
-            reflect, flatten
+            reflect, straighten, flatten
         }
