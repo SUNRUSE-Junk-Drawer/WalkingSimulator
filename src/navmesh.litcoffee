@@ -87,60 +87,58 @@ MSN is a binary format.  It is comprised of:
             
 ## constrain
 
-Call with an object containing:
+- A vector specifying the location moved to.
+- A reference to the navmesh triangle which contained the location moved from.
 
-- location: An array of three numbers specifying the X, Y and Z moved to.
-- triangle: A reference to the triangle the entity is currently in.
-    
-This will modify these properties to constrain the entity to the surface of the 
-navmesh.
+Updates the location vector to take into account collision with navmesh triangle 
+walls and returns the new containing navmesh triangle.
             
-    constrain = (obj) ->
+    constrain = (location, triangle) ->
         
         for iterations in [0...25]
-            distanceA = plane.distance obj.triangle.edges[0].plane, obj.location
-            distanceB = plane.distance obj.triangle.edges[1].plane, obj.location
-            distanceC = plane.distance obj.triangle.edges[2].plane, obj.location
+            distanceA = plane.distance triangle.edges[0].plane, location
+            distanceB = plane.distance triangle.edges[1].plane, location
+            distanceC = plane.distance triangle.edges[2].plane, location
             if distanceA >= 0 and distanceB >= 0 and distanceC >= 0 
                 break
 
-            if distanceA < 0 and obj.triangle.edges[0].neighbor
-                obj.triangle = obj.triangle.edges[0].neighbor
+            if distanceA < 0 and triangle.edges[0].neighbor
+                triangle = triangle.edges[0].neighbor
                 continue
                 
-            if distanceB < 0 and obj.triangle.edges[1].neighbor
-                obj.triangle = obj.triangle.edges[1].neighbor
+            if distanceB < 0 and triangle.edges[1].neighbor
+                triangle = triangle.edges[1].neighbor
                 continue
                 
-            if distanceC < 0 and obj.triangle.edges[2].neighbor
-                obj.triangle = obj.triangle.edges[2].neighbor
+            if distanceC < 0 and triangle.edges[2].neighbor
+                triangle = triangle.edges[2].neighbor
                 continue
             
             if distanceA < 0 and distanceB < 0
-                vector.copy obj.triangle.vertices[1], obj.location
+                vector.copy triangle.vertices[1], location
                 continue
                 
             if distanceB < 0 and distanceC < 0
-                vector.copy obj.triangle.vertices[2], obj.location
+                vector.copy triangle.vertices[2], location
                 continue
                 
             if distanceC < 0 and distanceA < 0
-                vector.copy obj.triangle.vertices[0], obj.location
+                vector.copy triangle.vertices[0], location
                 continue
 
             if distanceA < 0
-                plane.project obj.triangle.edges[0].plane, obj.location, obj.location
+                plane.project triangle.edges[0].plane, location, location
                 continue
                 
             if distanceB < 0
-                plane.project obj.triangle.edges[1].plane, obj.location, obj.location
+                plane.project triangle.edges[1].plane, location, location
                 continue
                     
             if distanceC < 0
-                plane.project obj.triangle.edges[2].plane, obj.location, obj.location
+                plane.project triangle.edges[2].plane, location, location
                 continue
                 
-        plane.project obj.triangle.plane, obj.location, obj.location
-        return        
+        plane.project triangle.plane, location, location
+        triangle
         
     module.exports = { load, constrain }
