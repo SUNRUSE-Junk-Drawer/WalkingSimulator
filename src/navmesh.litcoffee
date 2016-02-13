@@ -138,7 +138,6 @@ walls and returns the new containing navmesh triangle.
                 plane.project triangle.edges[2].plane, location, location
                 continue
                 
-        plane.project triangle.plane, location, location
         triangle
         
     module.exports = { load, constrain }
