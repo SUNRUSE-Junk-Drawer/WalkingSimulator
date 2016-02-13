@@ -1,3 +1,20 @@
+# navmesh
+
+Navmeshes are stored as "MSN" (MasSplat Navmesh) and are used to define where 
+entities (including the player) can travel.  By default, they are unable to 
+leave the surface, "crawling" over it.  Each tile is a 3D triangle.  A light 
+Any two triangles sharing two vertices are joined and the edge formed may be 
+crossed from one to the other, otherwise, the edge is treated as a form of wall.
+
+MSN is a binary format.  It is comprised of:
+
+| Type    | Num.              | Description                                                |
+| ------- | ----------------- | ---------------------------------------------------------- |
+| uint16  | 1                 | The number of vertices defined.                            |
+| uint16  | 1                 | The number of triangles defined.                           |
+| float32 | 3x num. vertices  | The X, Y and Z of each vertex.                             |
+| uint16  | 3x num. triangles | The first, second and third vertex index of each triangle. |
+
 On calling with the path to a MSN file and a callback, reads the MSN file and
 executes the callback with an object as the argument.
     
