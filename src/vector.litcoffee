@@ -286,6 +286,22 @@ to the output vector.
         multiply.byScalar normal, (coefficient * 2), reflectTemp
         subtract.vector input, reflectTemp, output
         
+# flatten
+
+- An input vector.
+- An input normal vector.
+- An output vector.
+
+Writes the input vector to the output vector, but "flattened" along the surface
+normal.  For instance, a vector pointing up and right with a normal facing right
+would output a vector pointing only up.
+
+    flattenTemp = []
+    flatten = (input, normal, output) ->
+        matched = dot input, normal
+        multiply.byScalar normal, matched, flattenTemp
+        subtract.vector input, flattenTemp, output
+        
     module.exports = { 
             sum, copy, negate
             add, subtract, multiply, divide
@@ -294,5 +310,5 @@ to the output vector.
             distanceSquared, distance
             normalize
             interpolate
-            reflect
+            reflect, flatten
         }
