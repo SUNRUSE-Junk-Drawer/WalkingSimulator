@@ -1,10 +1,10 @@
-Required by Webpack to include resources in the HTML.
+# index
 
+This module is used to run the main event loop.  Please see the "game" module
+for details.
+
+    # Required for Webpack to include the stylesheet in the HTML.
 	require "./index.sass"
-
-Main event loop.
-The gameplay logic runs at a constant 20Hz "tick" rate, with linear 
-interpolation for rendering.
 	
 	addEventListener "load", ->
 		game = require "./game.litcoffee"
@@ -13,9 +13,12 @@ interpolation for rendering.
             lastTimestamp = undefined
             tickProgress = 0
             
+            # Ensures the game has ticked once before the first draw.
+            game.tick()
+            
             run = (timestamp) ->
                 if lastTimestamp isnt undefined
-                    tickProgress += (timestamp - lastTimestamp) * 20 / 1000   
+                    tickProgress += (timestamp - lastTimestamp) * 20 / 1000 
                 
                 lastTimestamp = timestamp
                 
