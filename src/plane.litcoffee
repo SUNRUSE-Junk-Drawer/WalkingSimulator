@@ -1,19 +1,23 @@
+# plane
+
 A plane is an object containing:
 
 - normal: A vector specifying the facing direction of the plane.
 - distance: A number specifying how far from 0, 0, 0 along the normal the plane 
             is.
-            
-Exports an object.
 
     vector = require "./vector.litcoffee"
     tempA = []
     tempB = []
 
-Call the "fromTriangle" property with three input vectors forming a clockwise 
-triangle and an output object to create a plane on which those three vectors 
-lie.  If the output object is undefined, an empty one is created.  The output 
-object is returned.
+## fromTriangle
+
+- A vector specifying the location of the first vertex.
+- A vector specifying the location of the second vertex.
+- A vector specifying the location of the third vertex.
+- An existing object to populate, else, falsy.
+
+The populated object is returned.
 
     fromTriangle = (a, b, c, output) ->
         output = output or {}
@@ -25,14 +29,24 @@ object is returned.
         output.distance = vector.dot output.normal, a
         output
             
-Call the "distance" property with a plane and a vector.  The distance between
-the plane and vector is returned.  If the vector is behind the plane, the
-distance is negative.
+## distance
+
+- A plane.
+- A vector.
+
+Returns the distance between the plane and the vector.  Negative when behind the
+plane.
 
     distance = (plane, input) -> (vector.dot plane.normal, input) - plane.distance
     
-Call the "project" property with a plane, input vector and output vector to
-write the nearest point to the input vector on the plane to the output vector.
+## project
+
+- A plane.
+- An input vector.
+- An output vector.
+
+Projects the input vector onto the surface of the plane, travelling along its
+normal to find the closest point, and writes that point to the output vector.
     
     project = (plane, input, output) ->
         dist = distance plane, input
