@@ -15,14 +15,28 @@ MSN is a binary format.  It is comprised of:
 | float32 | 3x num. vertices  | The X, Y and Z of each vertex.                             |
 | uint16  | 3x num. triangles | The first, second and third vertex index of each triangle. |
 
-On calling with the path to a MSN file and a callback, reads the MSN file and
-executes the callback with an object as the argument.
-    
     file = require "./file.litcoffee"
     vector = require "./vector.litcoffee"
     plane = require "./plane.litcoffee"
+
+## load
+
+- filename: The "real" location of the MSN file to load.  (i.e. already 
+            "require"-d)
+- callback: A callback to execute with the array of objects representing the
+            loaded objects on success, containing:
+            
++ plane: A plane object for the surface of the triangle itself.
++ edges: An array of three objects representing the edges of the triangle,
+       containing:
+  
+* neighbor: When null, there is no other triangle over this edge.  Otherwise
+            a reference to the triangle object which can be found over it.
+* plane: A plane facing inwards from the edge.  If this edge borders another
+         triangle, this will be aligned to both this triangle and the 
+         neighbor.
     
-    module.exports = (path, callback) ->
+    load = (path, callback) ->
         file.arrayBuffer path, (response) ->
             header = new Uint16Array response, 0, 2
             vertexData = new Float32Array response, 4, header[0] * 3
@@ -59,66 +73,67 @@ executes the callback with an object as the argument.
                         break
                     neighbor: neighbor
                     plane: plane.fromTriangle vertices[vertexA], vertexC, vertices[vertexB]
-                   
-            callback
+
+            callback triangles
+            return
+        return
             
-Call the "constrain" property with an object containing:
+## constrain
+
+Call with an object containing:
 
 - location: An array of three numbers specifying the X, Y and Z moved to.
-- triangle: A reference to the triangle the entity is currently in.  If not
-    known, falsy.
+- triangle: A reference to the triangle the entity is currently in.
     
 This will modify these properties to constrain the entity to the surface of the 
 navmesh.
             
-                constrain: (obj) ->
-                    if not obj.triangle
-                        obj.triangle = triangles[0]
+    constrain = (obj) ->
+        
+        for iterations in [0...25]
+            distanceA = plane.distance obj.triangle.edges[0].plane, obj.location
+            distanceB = plane.distance obj.triangle.edges[1].plane, obj.location
+            distanceC = plane.distance obj.triangle.edges[2].plane, obj.location
+            if distanceA >= 0 and distanceB >= 0 and distanceC >= 0 
+                break
+
+            if distanceA < 0 and obj.triangle.edges[0].neighbor
+                obj.triangle = obj.triangle.edges[0].neighbor
+                continue
+                
+            if distanceB < 0 and obj.triangle.edges[1].neighbor
+                obj.triangle = obj.triangle.edges[1].neighbor
+                continue
+                
+            if distanceC < 0 and obj.triangle.edges[2].neighbor
+                obj.triangle = obj.triangle.edges[2].neighbor
+                continue
+            
+            if distanceA < 0 and distanceB < 0
+                vector.copy vertices[obj.triangle.indices[1]], obj.location
+                continue
+                
+            if distanceB < 0 and distanceC < 0
+                vector.copy vertices[obj.triangle.indices[2]], obj.location
+                continue
+                
+            if distanceC < 0 and distanceA < 0
+                vector.copy vertices[obj.triangle.indices[0]], obj.location
+                continue
+
+            if distanceA < 0
+                plane.project obj.triangle.edges[0].plane, obj.location, obj.location
+                continue
+                
+            if distanceB < 0
+                plane.project obj.triangle.edges[1].plane, obj.location, obj.location
+                continue
                     
-                    for iterations in [0...25]
-                        distanceA = plane.distance obj.triangle.edges[0].plane, obj.location
-                        distanceB = plane.distance obj.triangle.edges[1].plane, obj.location
-                        distanceC = plane.distance obj.triangle.edges[2].plane, obj.location
-                        if distanceA >= 0 and distanceB >= 0 and distanceC >= 0 
-                            break
-
-                        if distanceA < 0 and obj.triangle.edges[0].neighbor
-                            obj.triangle = obj.triangle.edges[0].neighbor
-                            continue
-                            
-                        if distanceB < 0 and obj.triangle.edges[1].neighbor
-                            obj.triangle = obj.triangle.edges[1].neighbor
-                            continue
-                            
-                        if distanceC < 0 and obj.triangle.edges[2].neighbor
-                            obj.triangle = obj.triangle.edges[2].neighbor
-                            continue
-                        
-                        if distanceA < 0 and distanceB < 0
-                            vector.copy vertices[obj.triangle.indices[1]], obj.location
-                            continue
-                            
-                        if distanceB < 0 and distanceC < 0
-                            vector.copy vertices[obj.triangle.indices[2]], obj.location
-                            continue
-                            
-                        if distanceC < 0 and distanceA < 0
-                            vector.copy vertices[obj.triangle.indices[0]], obj.location
-                            continue
-
-                        if distanceA < 0
-                            plane.project obj.triangle.edges[0].plane, obj.location, obj.location
-                            continue
-                            
-                        if distanceB < 0
-                            plane.project obj.triangle.edges[1].plane, obj.location, obj.location
-                            continue
-                                
-                        if distanceC < 0
-                            plane.project obj.triangle.edges[2].plane, obj.location, obj.location
-                            continue
-                            
-                    plane.project obj.triangle.plane, obj.location, obj.location
-                    return        
-            return
-        return
+            if distanceC < 0
+                plane.project obj.triangle.edges[2].plane, obj.location, obj.location
+                continue
+                
+        plane.project obj.triangle.plane, obj.location, obj.location
+        return        
+        
+    module.exports = { load, constrain }
