@@ -271,6 +271,21 @@ two input vectors to the output.
             output[index] = misc.interpolate fromValue, toValue, alpha
         return
         
+# reflect
+
+- An input vector.
+- An input normal vector.
+- An output vector.
+
+Writes the reflection of the input vector against the surface normal specified
+to the output vector.
+        
+    reflectTemp = []
+    reflect = (input, normal, output) ->
+        coefficient = dot input, normal
+        multiply.byScalar normal, (coefficient * 2), reflectTemp
+        subtract.vector input, reflectTemp, output
+        
     module.exports = { 
             sum, copy, negate
             add, subtract, multiply, divide
@@ -279,4 +294,5 @@ two input vectors to the output.
             distanceSquared, distance
             normalize
             interpolate
+            reflect
         }
