@@ -1,13 +1,19 @@
+# vector
+
 Vectors are arrays of 3 numbers; X, Y and Z.
 X runs from left to right.
 Y runs from bottom to top.
 Z runs from back to front.
 
-This module exports an object.
+When given as outputs, vectors can safely be empty arrays.
 
     misc = require "./misc.litcoffee"
 
-Given a vector, calling the "sum" property returns the sum of its components.
+## sum
+
+- A vector.
+
+Returns the sum of the components.
 
     sum = (vector) ->
         total = 0
@@ -18,13 +24,21 @@ Given a vector, calling the "sum" property returns the sum of its components.
         (output[index] = callback value) for value, index in input
         return
         
-Given an input vector and output vector, calling the "copy" property copies each
-component from the input to the output.
+## copy
+
+- An input vector.
+- An output vector.
+
+Copies every component from the input to the output.
         
     copy = unary (component) -> component
     
-Given an input vector and output vector, calling the "negate" property writes
-the negative of each component in the input vector to the output vector.
+## copy
+
+- An input vector.
+- An output vector.
+
+Writes the negative of every component of the input to the output.
     
     negate = unary (component) -> -component
     
@@ -41,63 +55,128 @@ the negative of each component in the input vector to the output vector.
             (output[index] = callback valueA, b) for valueA, index in a
             return
     
-Given two input vectors and an output vector, calling "add.vector" adds each
-component in the input vectors and writes the results to the output vector.
+## add.vector
 
-Given a number, an input vector and an output vector, calling "add.scalarBy" 
-adds the number to each component in the vector and and writes the results to
+- An input vector.
+- An input vector.
+- An output vector.
+    
+Adds each component in the input vectors and writes the results to the output 
+vector.
+
+## add.scalarBy
+
+- A number.
+- An input vector.
+- An output vector.
+
+Adds the number to each component in the vector and and writes the results to
 the output vector.
 
-Given an input vector, a number and an output vector, calling "add.byScalar" 
-adds each component in the vector to the number and writes the result to
+## add.byScalar
+
+- An input vector.
+- A number.
+- An output vector.
+
+Adds each component in the vector to the number and writes the result to
 the output vector.
     
     add = binary (a, b) -> a + b
     
-Given two input vectors and an output vector, calling "subtract.vector" 
-subtracts each compenent in the second input vector from the equivalent in the
+## subtract.vector
+
+- An input vector.
+- An input vector.
+- An output vector.
+    
+Subtracts each compenent in the second input vector from the equivalent in the
 first input vector and writes the results to the output vector.
 
-Given a number, an input vector and an output vector, calling 
-"subtract.scalarBy" subtracts each component in the vector from the number and
-writes the results to the output vector.
+## subtract.scalarBy
 
-Given an input vector, a number and an output vector, calling 
-"subtract.byScalar" subtracts the number from each component in the vector and
-writes the results to the output vector.
+- A number.
+- An input vector.
+- An output vector.
+
+Subtracts each component in the vector from the number and writes the results to 
+the output vector.
+
+## subtract.byScalar
+
+- An input vector.
+- A number.
+- An output vector.
+
+Subtracts the number from each component in the vector and writes the results to 
+the output vector.
     
     subtract = binary (a, b) -> a - b
     
-Given two input vectors and an output vector, calling "multiply.vector" 
-multiplies each compenent in the second input vector with the equivalent in the
+## multiply.vector
+
+- An input vector.
+- An input vector.
+- An output vector.
+    
+Multiplies each compenent in the second input vector with the equivalent in the
 first input vector and writes the results to the output vector.
 
-Given a number, an input vector and an output vector, calling 
-"multiply.scalarBy" multiplies the number by each component in the vector and
-writes the results to the output vector.
+## multiply.scalarBy
 
-Given an input vector, a number and an output vector, calling 
-"multiply.byScalar" multiplies each component in the vector by the number and
-writes the results to the output vector.
+- A number.
+- An input vector.
+- An output vector.
+
+Multiplies the number by each component in the vector and writes the results to 
+the output vector.
+
+## multiply.byScalar
+
+- An input vector.
+- A number.
+- An output vector.
+
+Multiplies each component in the vector by the number and writes the results to 
+the output vector.
     
     multiply = binary (a, b) -> a * b
     
-Given two input vectors and an output vector, calling "divide.vector" 
-divides each compenent in the first input vector by the equivalent in the
-second input vector and writes the results to the output vector.
+## divide.vector
 
-Given a number, an input vector and an output vector, calling 
-"divide.scalarBy" divides the number by each component in the vector and
-writes the results to the output vector.
+- An input vector.
+- An input vector.
+- An output vector.
+    
+Divides each compenent in the first input vector by the equivalent in the second
+input vector and writes the results to the output vector.
 
-Given an input vector, a number and an output vector, calling 
-"divide.byScalar" divides each component in the vector by the number and
-writes the results to the output vector.
+## divide.scalarBy
+
+- A number.
+- An input vector.
+- An output vector.
+
+Divides the number by each component in the vector and writes the results to the
+output vector.
+
+## divide.byScalar
+
+- An input vector.
+- A number.
+- An output vector.
+
+Divides each component in the vector by the number and writes the results to the
+output vector.
     
     divide = binary (a, b) -> a / b
     
-Given two vectors, calling the "dot" property returns the dot product of those
-two vectors.
+# dot
+    
+- A vector.
+- A vector.
+
+Returns the dot product of the two vectors.
 
     tempA = []
     tempB = []
@@ -105,40 +184,68 @@ two vectors.
         multiply.vector a, b, tempA
         sum tempA
     
-Given a vector, calling the "magnitudeSquared" property returns the square of
-its magnitude.
+# magnitudeSquared
+
+- A vector.
+
+Returns the square of the magnitude/length of the vector.
+Faster than "magnitude".
     
     magnitudeSquared = (v) -> dot v, v
     
-Given a vector, calling the "magnitude" property returns its magnitude.
+# magnitude
+
+- A vector.
+
+Returns the magnitude/length of the vector.
+Slower than "magnitudeSquared".
     
     magnitude = (v) -> Math.sqrt magnitudeSquared v
 
-Given two vectors, calling the "distanceSquared" property returns the square of
-the distance between them.
+# distanceSquared
+
+- A vector.
+- A vector.
+
+Returns the square of the distance between the two vectors.
+Faster than "distance".
     
     distanceSquared = (a, b) ->
         subtract.vector a, b, tempB
         magnitudeSquared tempB
 
-Given two vectors, calling the "distance" property returns the distance between
-them.
-        
+# distance
+
+- A vector.
+- A vector.
+
+Returns the distance between the two vectors.
+Slower than "distanceSquared".
+
     distance = (a, b) ->
         subtract.vector a, b, tempB
         magnitude tempB
         
-Given an input and output vector, calling the "normalize" property writes the
-normalized/unit length version of the input to the output.  The magnitude of the
-input vector is also returned.
+# normalize
+
+- An input vector.
+- An output vector.
+
+Writes the normalized/unit length version of the input vector to the output.
+Returns the magnitude/length of the original vector.
 
     normalize = (input, output) ->
         len = magnitude input
         divide.byScalar input, len, output
         len
      
-Given two input vectors and an output vector, calling the "cross" property
-writes the cross product of the two input vectors to the output vector.
+# cross
+
+- An input vector.
+- An input vector.
+- An output vector.
+
+Writes the cross product of the two input vectors to the output vector.
      
     cross = (a, b, output) ->
         copy a, tempA
@@ -148,9 +255,15 @@ writes the cross product of the two input vectors to the output vector.
         output[2] = tempA[0] * tempB[1] - tempB[0] * tempA[1]
         return
         
-Given an input vector to interpolate from, an input vector to interpolate to,
-a number where 0 is "from" and 1 is "to", and an output vector, calling the
-"interpolate" property writes the linear interpolation to the output vector.
+# interpolate
+
+- An input vector to interpolate from.
+- An input vector to interpolate to.
+- A number, where "0" is "from" and "1" is "to".
+- An output vector.
+
+Writes the linear interpolation between, or linear extrapolation beyond, the
+two input vectors to the output.
 
     interpolate = (from, to, alpha, output) ->
         for fromValue, index in from
