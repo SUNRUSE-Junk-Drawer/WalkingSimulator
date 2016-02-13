@@ -27,6 +27,8 @@ MSN is a binary format.  It is comprised of:
             loaded objects on success, containing:
             
 + plane: A plane object for the surface of the triangle itself.
++ vertices: An array of vectors specifying the locations of the vertices which
+            make up the triangle.
 + edges: An array of three objects representing the edges of the triangle,
        containing:
   
@@ -55,6 +57,11 @@ MSN is a binary format.  It is comprised of:
                     indices[i]
                     indices[i + 1]
                     indices[i + 2]
+                ]
+                vertices: [
+                    vertices[indices[i]]
+                    vertices[indices[i + 1]]
+                    vertices[indices[i + 2]]
                 ]
         
             for triangle in triangles
@@ -110,15 +117,15 @@ navmesh.
                 continue
             
             if distanceA < 0 and distanceB < 0
-                vector.copy vertices[obj.triangle.indices[1]], obj.location
+                vector.copy obj.triangle.vertices[1], obj.location
                 continue
                 
             if distanceB < 0 and distanceC < 0
-                vector.copy vertices[obj.triangle.indices[2]], obj.location
+                vector.copy obj.triangle.vertices[2], obj.location
                 continue
                 
             if distanceC < 0 and distanceA < 0
-                vector.copy vertices[obj.triangle.indices[0]], obj.location
+                vector.copy obj.triangle.vertices[0], obj.location
                 continue
 
             if distanceA < 0
