@@ -3,7 +3,14 @@ Matrices are arrays of 16 numbers forming a 4x4 matrix.
     temp1 = []
     temp2 = []
     rotationTemp = []
-    vectorTemp = []
+    tempVector = []
+    tempVectorFrom = []
+    tempVectorTo = []
+    fromTemp = []
+    toTemp = []
+    tempVectorX = []
+    tempVectorY = []
+    tempVectorZ = []
     
     makeRotate = (axis1, axis2, axis3, axis4) ->
         temp3 = []
@@ -117,33 +124,121 @@ Given a matrix and output vector, calling the "getTranslation" property writes
 the translation applied by the matrix to the output vector.
 
         getTranslation: (matrix, output) ->
-            output[0] = matrix[12]
-            output[1] = matrix[13]
-            output[2] = matrix[14]
+            output[0] = matrix[3]
+            output[1] = matrix[7]
+            output[2] = matrix[11]
 
 Given a matrix and output vector, calling the "getX" property writes the vector
 of the matrix's X axis (a scaled normal) to the output vector.
 
         getX: (matrix, output) ->
             output[0] = matrix[0]
-            output[1] = matrix[4]
-            output[2] = matrix[8]
+            output[1] = matrix[1]
+            output[2] = matrix[2]
 
 Given a matrix and output vector, calling the "getY" property writes the vector
 of the matrix's Y axis (a scaled normal) to the output vector.
 
         getY: (matrix, output) ->
-            output[0] = matrix[1]
+            output[0] = matrix[4]
             output[1] = matrix[5]
-            output[2] = matrix[9]
+            output[2] = matrix[6]
             
 Given a matrix and output vector, calling the "getZ" property writes the vector
 of the matrix's Z axis (a scaled normal) to the output vector.
 
         getZ: (matrix, output) ->
-            output[0] = matrix[2]
-            output[1] = matrix[6]
+            output[0] = matrix[8]
+            output[1] = matrix[9]
             output[2] = matrix[10]
+            
+# setTranslation
+
+- A vector specifying the translation to set.
+- A matrix to set the translation of.
+
+Overwrites the translation of the matrix with the content of the given vector.
+
+        setTranslation: (output, matrix) ->
+            matrix[3] = output[0]
+            matrix[7] = output[1]
+            matrix[11] = output[2]
+
+# setX
+
+- A vector specifying the X axis vector to set.
+- A matrix to set the X axis vector of.
+
+Overwrites the X axis of the matrix with the content of the given vector.
+
+        setX: (output, matrix) ->
+            matrix[0] = output[0]
+            matrix[1] = output[1]
+            matrix[2] = output[2]
+
+# setY
+
+- A vector specifying the Y axis vector to set.
+- A matrix to set the Y axis vector of.
+
+Overwrites the Y axis of the matrix with the content of the given vector.
+
+        setY: (output, matrix) ->
+            matrix[4] = output[0]
+            matrix[5] = output[1]
+            matrix[6] = output[2]
+
+# setZ
+
+- A vector specifying the Z axis vector to set.
+- A matrix to set the Z axis vector of.
+
+Overwrites the Z axis of the matrix with the content of the given vector.
+
+        setZ: (output, matrix) ->
+            matrix[8] = output[0]
+            matrix[9] = output[1]
+            matrix[10] = output[2]
+            
+# interpolate
+
+- An input matrix to interpolate from.
+- An input matrix to interpolate to.
+- A number specifying how far along to interpolate; "0" is "from" and "1" is 
+  "to".
+- An output matrix.
+
+Attempts to perform a somewhat crude interpolation between the two matrices
+which is not very linear.  Good enough for smoothing over small changes.
+Prioritizes the Z and Y axes over the X axis when ensuring orthogonal.
+
+        interpolate: (from, to, alpha, output) ->       
+            module.exports.copy from, fromTemp
+            module.exports.copy to, toTemp
+            module.exports.identity output
+            module.exports.getTranslation fromTemp, tempVectorFrom
+            module.exports.getTranslation toTemp, tempVectorTo
+            vector.interpolate tempVectorFrom, tempVectorTo, alpha, tempVector
+            module.exports.setTranslation tempVector, output
+            
+            module.exports.getX fromTemp, tempVectorFrom
+            module.exports.getX toTemp, tempVectorTo
+            vector.interpolate tempVectorFrom, tempVectorTo, alpha, tempVector
+            vector.normalize tempVector, tempVectorX, true  
+            
+            module.exports.getY fromTemp, tempVectorFrom
+            module.exports.getY toTemp, tempVectorTo
+            vector.interpolate tempVectorFrom, tempVectorTo, alpha, tempVectorY
+            
+            vector.cross tempVectorX, tempVectorY, tempVectorZ
+            vector.normalize tempVectorZ, tempVectorZ
+            vector.cross tempVectorZ, tempVectorX, tempVectorY
+            vector.normalize tempVectorY, tempVectorY
+            
+            module.exports.setX tempVectorX, output
+            module.exports.setY tempVectorY, output
+            module.exports.setZ tempVectorZ, output
+            return
             
     module.exports.identity temp1
     module.exports.identity temp2
