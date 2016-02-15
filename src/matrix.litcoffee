@@ -133,23 +133,23 @@ of the matrix's X axis (a scaled normal) to the output vector.
 
         getX: (matrix, output) ->
             output[0] = matrix[0]
-            output[1] = matrix[1]
-            output[2] = matrix[2]
+            output[1] = matrix[4]
+            output[2] = matrix[8]
 
 Given a matrix and output vector, calling the "getY" property writes the vector
 of the matrix's Y axis (a scaled normal) to the output vector.
 
         getY: (matrix, output) ->
-            output[0] = matrix[4]
+            output[0] = matrix[1]
             output[1] = matrix[5]
-            output[2] = matrix[6]
+            output[2] = matrix[9]
             
 Given a matrix and output vector, calling the "getZ" property writes the vector
 of the matrix's Z axis (a scaled normal) to the output vector.
 
         getZ: (matrix, output) ->
-            output[0] = matrix[8]
-            output[1] = matrix[9]
+            output[0] = matrix[2]
+            output[1] = matrix[6]
             output[2] = matrix[10]
             
 # setTranslation
@@ -173,8 +173,8 @@ Overwrites the X axis of the matrix with the content of the given vector.
 
         setX: (output, matrix) ->
             matrix[0] = output[0]
-            matrix[1] = output[1]
-            matrix[2] = output[2]
+            matrix[4] = output[1]
+            matrix[8] = output[2]
 
 # setY
 
@@ -184,9 +184,9 @@ Overwrites the X axis of the matrix with the content of the given vector.
 Overwrites the Y axis of the matrix with the content of the given vector.
 
         setY: (output, matrix) ->
-            matrix[4] = output[0]
+            matrix[1] = output[0]
             matrix[5] = output[1]
-            matrix[6] = output[2]
+            matrix[9] = output[2]
 
 # setZ
 
@@ -196,8 +196,8 @@ Overwrites the Y axis of the matrix with the content of the given vector.
 Overwrites the Z axis of the matrix with the content of the given vector.
 
         setZ: (output, matrix) ->
-            matrix[8] = output[0]
-            matrix[9] = output[1]
+            matrix[2] = output[0]
+            matrix[6] = output[1]
             matrix[10] = output[2]
             
 # interpolate
