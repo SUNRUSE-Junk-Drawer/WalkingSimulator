@@ -15,14 +15,17 @@ Matrices are arrays of 16 numbers forming a 4x4 matrix.
     makeRotate = (axis1, axis2, axis3, axis4) ->
         temp3 = []
         rotationTemp.push temp3
-        (radians, output) ->
+        (radians, output, local) ->
             sin = Math.sin radians
             cos = Math.cos radians
             temp3[axis1] = cos
             temp3[axis2] = -sin
             temp3[axis3] = sin
             temp3[axis4] = cos
-            module.exports.multiply output, temp3, output
+            if local
+                module.exports.multiply temp3, output, output
+            else
+                module.exports.multiply output, temp3, output
             return
 
     vector = require "./vector.litcoffee"
@@ -62,16 +65,22 @@ together and writes the result to the third.
             
 Given a number of radians and a matrix, calling the "rotateX" property modifies 
 the matrix to have been rotated by that number of radians about the X axis.
+If the third parameter is truthy, the rotation is applied in local rather than
+global space.
             
         rotateX: makeRotate 5, 6, 9, 10
         
 Given a number of radians and a matrix, calling the "rotateY" property modifies 
 the matrix to have been rotated by that number of radians about the Y axis.
+If the third parameter is truthy, the rotation is applied in local rather than
+global space.
         
         rotateY: makeRotate 0, 2, 8, 10
 
 Given a number of radians and a matrix, calling the "rotateZ" property modifies 
 the matrix to have been rotated by that number of radians about the Z axis.
+If the third parameter is truthy, the rotation is applied in local rather than
+global space.
         
         rotateZ: makeRotate 0, 1, 4, 5
         
