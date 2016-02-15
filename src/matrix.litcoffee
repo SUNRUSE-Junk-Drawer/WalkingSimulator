@@ -240,6 +240,42 @@ Prioritizes the Z and Y axes over the X axis when ensuring orthogonal.
             module.exports.setZ tempVectorZ, output
             return
             
+# invert
+
+- An input matrix to invert.
+- An output matrix to write to.
+
+Attempts to calculate the inverse of a matrix by negating its translation and
+transposing its X, Y and Z axes.  Will not work if any scaling has been applied.
+
+        invert: (input, output) ->
+            module.exports.copy input, fromTemp
+            module.exports.getX fromTemp, tempVectorX
+            module.exports.getY fromTemp, tempVectorY
+            module.exports.getZ fromTemp, tempVectorZ
+            module.exports.getTranslation fromTemp, tempVector
+            output[0] = input[0]
+            output[1] = input[4]
+            output[2] = input[8]
+            output[3] = -vector.dot tempVector, tempVectorX
+            
+            output[4] = input[1]
+            output[5] = input[5]
+            output[6] = input[9]
+            output[7] = -vector.dot tempVector, tempVectorY
+            
+            output[8] = input[2]
+            output[9] = input[6]
+            output[10] = input[10]
+            output[11] = -vector.dot tempVector, tempVectorZ
+            
+            output[12] = 0
+            output[13] = 0
+            output[14] = 0
+            output[15] = 1
+            
+            return
+            
     module.exports.identity temp1
     module.exports.identity temp2
     for mat in rotationTemp
