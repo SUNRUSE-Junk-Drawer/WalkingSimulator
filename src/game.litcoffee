@@ -68,6 +68,8 @@ all.
     forwardVelocity = []
     sidewardVelocity = []
     
+    edgeCallback = (edge) -> vector.flatten velocity, edge.plane.normal, velocity
+    
     tick = ->    
         if not firstTick
             matrix.copy entityTransform, entityTransformPreviousTick
@@ -79,7 +81,7 @@ all.
         
         # Apply navmesh triangle collision.
         matrix.getTranslation entityTransform, translation
-        triangle = navmesh.constrain translation, triangle
+        triangle = navmesh.constrain translation, triangle, edgeCallback
         
         # Gravity.
         velocity[1] -= 0.2
