@@ -114,10 +114,10 @@ Given a matrix, input vector and output vector, calling the "applyToVector"
 property writes the input vector transformed by the matrix to the output vector.
         
         applyToVector: (matrix, input, output) ->
-            vector.copy input, vectorTemp
-            output[0] = vectorTemp[0] * matrix[0] + vectorTemp[1] * matrix[1] + vectorTemp[2] * matrix[2] + matrix[3]
-            output[1] = vectorTemp[0] * matrix[4] + vectorTemp[1] * matrix[5] + vectorTemp[2] * matrix[6] + matrix[7]
-            output[2] = vectorTemp[0] * matrix[8] + vectorTemp[1] * matrix[9] + vectorTemp[2] * matrix[10] + matrix[11]
+            vector.copy input, tempVector
+            output[0] = tempVector[0] * matrix[0] + tempVector[1] * matrix[1] + tempVector[2] * matrix[2] + matrix[3]
+            output[1] = tempVector[0] * matrix[4] + tempVector[1] * matrix[5] + tempVector[2] * matrix[6] + matrix[7]
+            output[2] = tempVector[0] * matrix[8] + tempVector[1] * matrix[9] + tempVector[2] * matrix[10] + matrix[11]
             return
             
 Given a matrix and output vector, calling the "getTranslation" property writes
