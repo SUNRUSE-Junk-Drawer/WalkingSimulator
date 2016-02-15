@@ -89,11 +89,14 @@ MSN is a binary format.  It is comprised of:
 
 - A vector specifying the location moved to.
 - A reference to the navmesh triangle which contained the location moved from.
+- An optional callback executed when a wall is hit, with arguments:
+
++ The edge collided with.
 
 Updates the location vector to take into account collision with navmesh triangle 
 walls and returns the new containing navmesh triangle.
             
-    constrain = (location, triangle) ->
+    constrain = (location, triangle, edgeCallback) ->
         
         for iterations in [0...25]
             distanceA = plane.distance triangle.edges[0].plane, location
@@ -116,26 +119,38 @@ walls and returns the new containing navmesh triangle.
             
             if distanceA < 0 and distanceB < 0
                 vector.copy triangle.vertices[1], location
+                if edgeCallback
+                    edgeCallback triangle.edges[0]
+                    edgeCallback triangle.edges[1]
                 continue
                 
             if distanceB < 0 and distanceC < 0
                 vector.copy triangle.vertices[2], location
+                if edgeCallback
+                    edgeCallback triangle.edges[1]
+                    edgeCallback triangle.edges[2]
                 continue
                 
             if distanceC < 0 and distanceA < 0
                 vector.copy triangle.vertices[0], location
+                if edgeCallback
+                    edgeCallback triangle.edges[2]
+                    edgeCallback triangle.edges[0]
                 continue
 
             if distanceA < 0
                 plane.project triangle.edges[0].plane, location, location
+                if edgeCallback then edgeCallback triangle.edges[0]
                 continue
                 
             if distanceB < 0
                 plane.project triangle.edges[1].plane, location, location
+                if edgeCallback then edgeCallback triangle.edges[1]
                 continue
                     
             if distanceC < 0
                 plane.project triangle.edges[2].plane, location, location
+                if edgeCallback then edgeCallback triangle.edges[2]
                 continue
                 
         triangle
