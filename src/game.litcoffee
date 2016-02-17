@@ -51,6 +51,11 @@ all.
     entityTransformPreviousTick = []
     entityTransformPreviousDraw = []
     matrix.identity entityTransform
+    
+    torsoTransform = []
+    torsoTransformToDraw = []
+    torsoTransformPreviousTick = []
+    torsoTransformPreviousDraw = []
 
     surfaceCorrectedEntityTransform = []
     matrix.identity surfaceCorrectedEntityTransform
@@ -63,21 +68,45 @@ all.
     xAxis = []
     yAxis = []
     zAxis = []
+    torsoXAxis = []
+    torsoZAxis = []
     translation = []
-    acceleration = []
-    forwardVelocity = []
-    sidewardVelocity = []
+    targetForwardVelocity = []
+    targetSidewardVelocity = []
+    targetVelocity = []
+    torsoTranslation = []
+    
+    yaw = 0
+    pitch = 0
+    
+    stick = [0, 0, 0]
+    stickAngle = 0
     
     edgeCallback = (edge) -> vector.flatten velocity, edge.plane.normal, velocity
     
     tick = ->    
         if not firstTick
             matrix.copy entityTransform, entityTransformPreviousTick
+            matrix.copy torsoTransform, torsoTransformPreviousTick
             
         matrix.translate velocity, entityTransform        
         
+        stick[0] = gamepad.right - gamepad.left
+        stick[1] = gamepad.forward - gamepad.backward
+        stickLength = vector.magnitude stick
+        
+        inDeadzone = stickLength < 0.1
+        
+        if inDeadzone 
+            stick[0] = stick[1] = 0
+        else 
+            stickAngle = Math.atan2 -stick[0], stick[1]
+            if stickLength > 1                
+                vector.divide.byScalar stick, stickLength, stick
+                stickLength = 1
+        
         # Left/right rotation.
-        matrix.rotateY ((gamepad.left - gamepad.right) * 0.1), entityTransform, true
+        matrix.rotateY (stick[0] * -0.1), entityTransform, true
         
         # Apply navmesh triangle collision.
         matrix.getTranslation entityTransform, translation
@@ -102,15 +131,14 @@ all.
             vector.reflect velocity, triangle.plane.normal, velocity
             vector.flatten velocity, triangle.plane.normal, velocity
         
-            vector.multiply.byScalar zAxis, ((gamepad.forward - gamepad.backward) * 0.2), acceleration
-            vector.add.vector velocity, acceleration, velocity
-        
-            # Apply friction.  There is more sidewards than backwards/forwards.
-            vector.flatten velocity, zAxis, sidewardVelocity
-            vector.straighten velocity, zAxis, forwardVelocity
-            vector.multiply.byScalar sidewardVelocity, 0.9, sidewardVelocity
-            vector.multiply.byScalar forwardVelocity, 0.99, forwardVelocity
-            vector.add.vector sidewardVelocity, forwardVelocity, velocity
+            if not inDeadzone
+                matrix.getX entityTransform, xAxis
+                vector.multiply.byScalar zAxis, (stick[1] * 10), targetForwardVelocity                
+                vector.multiply.byScalar xAxis, (stick[0] * 10), targetSidewardVelocity                
+                vector.add.vector targetForwardVelocity, targetSidewardVelocity, targetVelocity
+            else
+                targetVelocity[0] = targetVelocity[1] = targetVelocity[2] = 0
+            vector.interpolate velocity, targetVelocity, 0.05, velocity
             
         # Apply air resistance.
         vector.multiply.byScalar velocity, 0.98, velocity
@@ -134,9 +162,27 @@ all.
         matrix.interpolate entityTransform, surfaceCorrectedEntityTransform, 0.1, entityTransform
         
         matrix.setTranslation translation, entityTransform
+        
+        matrix.copy entityTransform, torsoTransform
+        
+        matrix.getY entityTransform, yAxis
+        vector.multiply.byScalar yAxis, 10, torsoTranslation
+        vector.add.vector torsoTranslation, translation, torsoTranslation
+        
+        yaw = misc.interpolateAngle yaw, stickAngle, 0.2, yaw
+        matrix.rotateY yaw, torsoTransform, true
+        
+        matrix.getZ torsoTransform, torsoZAxis # TODO: If the entity transform is ever non-identity at startup we'll need to initialize torsoTransform for this to be right in the first ticks.
+        matrix.getX torsoTransform, torsoXAxis # TODO: If the entity transform is ever non-identity at startup we'll need to initialize torsoTransform for this to be right in the first ticks.
+        pitch = misc.interpolate pitch, (0.5 * stickLength - 0.1 * vector.dot torsoZAxis, velocity), 0.2
+        matrix.rotateX pitch, torsoTransform, true
+        matrix.rotateZ (0.1 * vector.dot torsoXAxis, velocity), torsoTransform, true
+        
+        matrix.setTranslation torsoTranslation, torsoTransform
     
         if firstTick
             matrix.copy entityTransform, entityTransformPreviousTick
+            matrix.copy torsoTransform, torsoTransformPreviousTick
             firstTick = false
         return
   
@@ -145,11 +191,14 @@ Called with the progress through the current frame (a number between 0 and 1) to
 redraw the scene.
   
     draw = (progress) ->     
+
         if not firstDraw
             matrix.copy entityTransformToDraw, entityTransformPreviousDraw
             matrix.copy cameraTransform, cameraTransformPreviousDraw
+            matrix.copy torsoTransformToDraw, torsoTransformPreviousDraw
         
         matrix.interpolate entityTransformPreviousTick, entityTransform, progress, entityTransformToDraw
+        matrix.interpolate torsoTransformPreviousTick, torsoTransform, progress, torsoTransformToDraw
         
         matrix.invert entityTransformToDraw, cameraTransform
         matrix.translate [0,-10, 10], cameraTransform
@@ -161,7 +210,7 @@ redraw the scene.
             
         context.begin 0, 0, context.width, context.height, 1, cameraTransformPreviousDraw, cameraTransform, 0.1, 0.5, 0.9
         cloud.draw testMap
-        cloud.draw testEntity, entityTransformPreviousDraw, entityTransformToDraw
+        cloud.draw testEntity, torsoTransformPreviousDraw, torsoTransformToDraw
         
         return
         
