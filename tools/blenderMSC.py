@@ -8,7 +8,7 @@ bl_info = {
   "category": "Import-Export"
 }
 
-import bpy, struct, math, random
+import bpy, struct, math, random, re
 
 class ExportMSC(bpy.types.Operator):
   bl_idname = "export.msc"
@@ -16,18 +16,31 @@ class ExportMSC(bpy.types.Operator):
   
   filepath = bpy.props.StringProperty(name="File Path", description="The path to a file to export to.", maxlen=1024, default="")
   splatSizeMultiplier = bpy.props.FloatProperty(name="Splat Size Multiplier", description="By default, splats are the size of the face.  Increase this if you see gaps.", step=0.1, min=0.0, default=1.3)
+  skeletal = bpy.props.BoolProperty(name="Skeletal", description="Transforms are not applied, individual objects are written with distinct bone IDs.  A CoffeeScript file is produced containing the object names/IDs and their default pose.", default=False)
   
-  def execute(self, context):
-
+  def execute(self, context):  
+    mscPath = self.properties.filepath
+    coffeePath = ""
+    
+    if not mscPath.lower().endswith(".msc"):
+        coffeePath = mscPath + ".coffee"
+        mscPath = mscPath + ".msc"
+    else:
+        coffeePath = mscPath[:-4] + ".coffee"
+        
     # This is complicated somewhat by the fact that vertices don't have colour.
     # Instead, the faces' references to the vertices have colour, so two faces
     # sharing a vertex can have different colours.
     # As such, the mean average of the colours applicable to a vertex are used.
-    file = open(self.properties.filepath, "wb")
+    bones = []
+    splats = []
     for obj in bpy.context.selected_objects:
       if obj.type == "MESH":
         mesh = obj.to_mesh(bpy.context.scene, True, "PREVIEW")
-        mesh.transform(obj.matrix_world)
+        
+        if not self.properties.skeletal:
+            mesh.transform(obj.matrix_world)
+            
         i = 0
         colLayer = mesh.vertex_colors[0]
         blending = {}
@@ -65,15 +78,49 @@ class ExportMSC(bpy.types.Operator):
               radius = thisRadius
           radius *= self.properties.splatSizeMultiplier
           
-          file.write(struct.pack("f", x))
-          file.write(struct.pack("f", y))
-          file.write(struct.pack("f", z))
-          file.write(struct.pack("B", int(red * 255)))
-          file.write(struct.pack("B", int(green * 255)))
-          file.write(struct.pack("B", int(blue * 255)))
-          file.write(struct.pack("B", 0)) # We need to pack this to 4-byte alignment.
-          file.write(struct.pack("f", radius))
-    file.close()
+          splats.append({
+            "location": [x, y, z],
+            "radius": radius,
+            "color": [int(red * 255), int(green * 255), int(blue * 255)]
+          })
+        bones.append({
+            "name": obj.name,
+            "matrix": obj.matrix_world,
+            "splats": len(mesh.polygons)
+        })
+        
+    mscFile = open(mscPath, "wb")
+    
+    for splat in splats:
+      for axis in splat["location"]:
+          mscFile.write(struct.pack("f", axis))
+      
+    for splat in splats:
+      mscFile.write(struct.pack("f", splat["radius"]))      
+      
+    for splat in splats:
+      for channel in splat["color"]:
+        mscFile.write(struct.pack("B", channel))
+        
+    mscFile.close()
+    
+    if self.properties.skeletal:
+        coffeeFile = open(coffeePath, "w")
+        coffeeFile.write("module.exports = \n\tcloud: require \"./" + re.split("/|\\\\", mscPath)[-1] + "\"\n\tbones: [")
+        for index, bone in enumerate(bones):
+            if index > 0:
+                coffeeFile.write("\n\t\t,")
+            coffeeFile.write("\n\t\t\tname: \"" + bone["name"] + "\"")
+            coffeeFile.write("\n\t\t\tsplats: " + str(bone["splats"]))
+            coffeeFile.write("\n\t\t\ttransform: [")
+            for column in [0, 2, 1, 3]:
+                for row in [0, 2, 1, 3]:
+                    if column != 0 or row != 0:
+                        coffeeFile.write(", ")
+                    coffeeFile.write(str(bone["matrix"][column][row]))
+            coffeeFile.write("]")
+        coffeeFile.write("\n\t]")
+        coffeeFile.close()
     return {"FINISHED"}
 
   def invoke(self, context, event):
