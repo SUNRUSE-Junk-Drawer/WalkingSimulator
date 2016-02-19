@@ -38,7 +38,16 @@ can be scaled up or down using the "Splat Size Multiplier" on the left side when
 choosing where to export to.  Any modifiers or transforms will be applied before
 export.  Y and Z will be automatically swapped.
 
-Animated point clouds are currently not exportable.
+If "skeletal" is checked, the objects are exported without their rotation/
+location and a .coffee file is generated next to the .msc.  This exports an
+object containing:
+
+- cloud: A "require" of the .msc file.
+- bones: An array of objects describing the bones in the cloud, containing:
+
++ name: A string containing the object name in Blender.
++ splats: The number of splats in this bone.
++ transform: The transform applied to the object in Blender.
 
 ## Exporting navmeshes from Blender
 
