@@ -5,8 +5,17 @@ precision mediump float;
 attribute vec3 origin;
 attribute vec2 local;
 attribute vec3 color;
+
+#ifdef BONES
+// This should be an integer, but integer attributes appear to be impossible in WebGL.
+attribute float bone;
+uniform mat4 newTransform[BONES];
+uniform mat4 oldTransform[BONES];
+#else
 uniform mat4 newTransform;
 uniform mat4 oldTransform;
+#endif
+
 uniform vec2 postScale;
 varying vec2 var_uv;
 varying vec3 var_color;
@@ -18,8 +27,13 @@ vec3 applyTransform(mat4 transform) {
 void main() {
 	var_color = color;
 
-	vec3 oldOrigin = applyTransform(oldTransform);
-	vec3 newOrigin = applyTransform(newTransform);
+    #ifdef BONES
+        vec3 oldOrigin = applyTransform(oldTransform[int(bone)]);
+        vec3 newOrigin = applyTransform(newTransform[int(bone)]);
+    #else
+        vec3 oldOrigin = applyTransform(oldTransform);
+        vec3 newOrigin = applyTransform(newTransform);
+    #endif
 	vec2 originDifference = (newOrigin.xy / newOrigin.z) - (oldOrigin.xy / oldOrigin.z);
 	// If the computed start/end of the splat are in the exact same location, the normal between them is undefined.
 	// This happens reasonably frequently.
