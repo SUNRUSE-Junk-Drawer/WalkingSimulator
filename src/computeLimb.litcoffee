@@ -42,17 +42,24 @@ halves of a limb to fill the gap between the start and end locations.
     
     module.exports = (start, end, targetLength, sideNormal, startTransform, endTransform) ->
         vector.subtract.vector end, start, startEndDifference
-        vector.cross startEndDifference, sideNormal, bendNormal
         realLength = vector.normalize startEndDifference, startEndNormal
-        vector.normalize bendNormal, bendNormal
         
-        # The two halves of the limb form a pair of square-based triangles.
-        # Work out how far the bend should go based on Pythagoras' theorem.
-        alongBend = Math.sqrt (Math.max 0, (((targetLength / 2) * (targetLength / 2)) - ((realLength / 2) * (realLength / 2))))
-    
-        vector.interpolate start, end, 0.5, midpoint
-        vector.multiply.byScalar bendNormal, alongBend, joint
-        vector.add.vector joint, midpoint, joint
+        if realLength > targetLength
+            vector.multiply.byScalar startEndNormal, (targetLength / 2), joint
+            vector.add.vector joint, start, joint
+            lookAt start, joint, sideNormal, startTransform
+            lookAt joint, end, sideNormal, endTransform
+        else
+            vector.cross startEndDifference, sideNormal, bendNormal        
+            vector.normalize bendNormal, bendNormal
+            
+            # The two halves of the limb form a pair of square-based triangles.
+            # Work out how far the bend should go based on Pythagoras' theorem.
+            alongBend = Math.sqrt (Math.max 0, (((targetLength / 2) * (targetLength / 2)) - ((realLength / 2) * (realLength / 2))))
         
-        lookAt start, joint, sideNormal, startTransform
-        lookAt joint, end, sideNormal, endTransform
+            vector.interpolate start, end, 0.5, midpoint
+            vector.multiply.byScalar bendNormal, alongBend, joint
+            vector.add.vector joint, midpoint, joint
+            
+            lookAt start, joint, sideNormal, startTransform
+            lookAt joint, end, sideNormal, endTransform
