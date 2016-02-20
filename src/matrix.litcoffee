@@ -285,19 +285,19 @@ transposing its X, Y and Z axes.  Will not work if any scaling has been applied.
             module.exports.getY fromTemp, tempVectorY
             module.exports.getZ fromTemp, tempVectorZ
             module.exports.getTranslation fromTemp, tempVector
-            output[0] = input[0]
-            output[1] = input[4]
-            output[2] = input[8]
+            output[0] = fromTemp[0]
+            output[1] = fromTemp[4]
+            output[2] = fromTemp[8]
             output[3] = -vector.dot tempVector, tempVectorX
             
-            output[4] = input[1]
-            output[5] = input[5]
-            output[6] = input[9]
+            output[4] = fromTemp[1]
+            output[5] = fromTemp[5]
+            output[6] = fromTemp[9]
             output[7] = -vector.dot tempVector, tempVectorY
             
-            output[8] = input[2]
-            output[9] = input[6]
-            output[10] = input[10]
+            output[8] = fromTemp[2]
+            output[9] = fromTemp[6]
+            output[10] = fromTemp[10]
             output[11] = -vector.dot tempVector, tempVectorZ
             
             output[12] = 0
