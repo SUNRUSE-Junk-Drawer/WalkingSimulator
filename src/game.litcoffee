@@ -69,6 +69,8 @@ all.
     cameraTransform = []
     cameraTransformPreviousDraw = []
     matrix.identity cameraTransform
+    
+    torsoAltitude = 0
 
     velocity = [0, 0, 0]    
     xAxis = []
@@ -140,6 +142,14 @@ all.
             velocity = velocity
             plane.project triangle.plane, translation, translation
             
+            # A "bump" when you land.
+            matrix.getY entityTransform, yAxis
+            impact = Math.abs (vector.dot triangle.plane.normal, velocity) * (vector.dot triangle.plane.normal, yAxis)
+            impact -= 1
+            if impact < 0 then impact = 0
+            impact *= 2
+            torsoAltitude -= impact
+            
             # Reflecting the velocity against the hit surface but then 
             # flattening it has the effect that hitting a ramp bounces you up it
             # but you don't bounce when falling onto the floor.
@@ -180,8 +190,10 @@ all.
         
         matrix.copy entityTransform, torsoTransform
         
+        torsoAltitude = misc.interpolate torsoAltitude, (if not inDeadzone then 10 else 12), 0.4
+        
         matrix.getY entityTransform, yAxis
-        vector.multiply.byScalar yAxis, 10, torsoTranslation
+        vector.multiply.byScalar yAxis, torsoAltitude, torsoTranslation
         vector.add.vector torsoTranslation, translation, torsoTranslation
         
         yaw = misc.interpolateAngle yaw, stickAngle, 0.2, yaw
@@ -209,10 +221,12 @@ all.
                 when "left"
                     matrix.applyToVector playerPoseNew.torso, [-2, -10, 0], leftFoot
                     vector.add.vector offset, leftFoot, leftFoot
+                    plane.project triangle.plane, leftFoot, leftFoot
                     "right"
                 when "right"
                     matrix.applyToVector playerPoseNew.torso, [2, -10, 0], rightFoot
                     vector.add.vector offset, rightFoot, rightFoot
+                    plane.project triangle.plane, rightFoot, rightFoot
                     "left"
     
         if firstTick
