@@ -50,9 +50,6 @@ all.
     firstDraw = true
     
     entityTransform = []
-    entityTransformToDraw = []
-    entityTransformPreviousTick = []
-    entityTransformPreviousDraw = []
     matrix.identity entityTransform
     
     playerPoseOld = pose.create characterData
@@ -67,14 +64,13 @@ all.
     matrix.identity surfaceCorrectedEntityTransform
 
     cameraTransform = []
+    cameraTransformToDraw = []
     cameraTransformPreviousDraw = []
+    cameraTransformPreviousTick = []
     cameraLocation = []
-    cameraLocationPreviousDraw = []
+    cameraLocationPreviousTick = []
     cameraTarget = []
-    cameraTargetPreviousDraw = []
-    cameraSide = []
-    cameraSidePreviousDraw = [0, 0, 1]
-    matrix.identity cameraTransform
+    cameraTargetPreviousTick = []
     
     torsoAltitude = 0
 
@@ -117,7 +113,9 @@ all.
     
     tick = ->        
         if not firstTick
-            matrix.copy entityTransform, entityTransformPreviousTick
+            matrix.copy cameraTransform, cameraTransformPreviousTick
+            vector.copy cameraLocation, cameraLocationPreviousTick
+            vector.copy cameraTarget, cameraTargetPreviousTick
             matrix.copy torsoTransform, torsoTransformPreviousTick
             vector.copy leftHand, leftHandPreviousTick
             vector.copy rightHand, rightHandPreviousTick
@@ -283,8 +281,32 @@ all.
         leftHand[1] -= 2
         rightHand[1] -= 2
         
+        matrix.getX entityTransform, xAxis
+        matrix.getY entityTransform, yAxis
+        matrix.getZ entityTransform, zAxis
+        matrix.getTranslation entityTransform, cameraTarget
+        vector.multiply.byScalar yAxis, 18, offset
+        vector.add.vector cameraTarget, offset, cameraTarget
+        vector.multiply.byScalar zAxis, -20, offset
+        vector.add.vector cameraTarget, offset, cameraLocation
+        
+        vector.interpolate cameraTargetPreviousTick, cameraTarget, 0.6, cameraTarget
+        vector.interpolate cameraLocationPreviousTick, cameraLocation, 0.6, cameraLocation
+        
+        cameraTriangle = triangle
+        cameraTriangle = navmesh.constrain cameraLocation, cameraTriangle
+        cameraAltitude = (plane.distance cameraTriangle.plane, cameraLocation) - 4
+        if cameraAltitude < 0
+            vector.multiply.byScalar cameraTriangle.plane.normal, -cameraAltitude, offset
+            vector.add.vector offset, cameraLocation, cameraLocation
+        
+        ik.lookAt cameraLocation, cameraTarget, xAxis, cameraTransform
+        matrix.invert cameraTransform, cameraTransform
+        
         if firstTick
-            matrix.copy entityTransform, entityTransformPreviousTick
+            matrix.copy cameraTransform, cameraTransformPreviousTick
+            vector.copy cameraLocation, cameraLocationPreviousTick
+            vector.copy cameraTarget, cameraTargetPreviousTick
             matrix.copy torsoTransform, torsoTransformPreviousTick
             vector.copy leftHand, leftHandPreviousTick
             vector.copy rightHand, rightHandPreviousTick
@@ -294,7 +316,7 @@ all.
         if inDeadzone then lag = 0.2
         vector.interpolate leftHandPreviousTick, leftHand, lag, leftHand
         vector.interpolate rightHandPreviousTick, rightHand, lag, rightHand
-            
+                   
         return
   
 # draw
@@ -304,40 +326,12 @@ redraw the scene.
     draw = (progress) ->     
     
         if not firstDraw
-            matrix.copy entityTransformToDraw, entityTransformPreviousDraw
-            matrix.copy cameraTransform, cameraTransformPreviousDraw
+            matrix.copy cameraTransformToDraw, cameraTransformPreviousDraw
             matrix.copy torsoTransformToDraw, torsoTransformPreviousDraw
             pose.copy playerPoseNew, playerPoseOld
-            vector.copy cameraTarget, cameraTargetPreviousDraw
-            vector.copy cameraLocation, cameraLocationPreviousDraw
         
-        matrix.interpolate entityTransformPreviousTick, entityTransform, progress, entityTransformToDraw
+        matrix.interpolate cameraTransformPreviousTick, cameraTransform, progress, cameraTransformToDraw
         matrix.interpolate torsoTransformPreviousTick, torsoTransform, progress, playerPoseNew.torso
-        
-        matrix.getY entityTransformToDraw, yAxis
-        matrix.getZ entityTransformToDraw, zAxis
-        matrix.getTranslation entityTransformToDraw, cameraTarget
-        vector.multiply.byScalar yAxis, 18, offset
-        vector.add.vector cameraTarget, offset, cameraTarget
-        vector.multiply.byScalar zAxis, -20, offset
-        vector.add.vector cameraTarget, offset, cameraLocation
-        
-        vector.interpolate cameraTargetPreviousDraw, cameraTarget, 0.1, cameraTarget
-        vector.interpolate cameraLocationPreviousDraw, cameraLocation, 0.1, cameraLocation
-        
-        matrix.getX entityTransformToDraw, cameraSide
-        vector.interpolate cameraSidePreviousDraw, cameraSide, 0.1, cameraSide
-        vector.copy cameraSide, cameraSidePreviousDraw
-        
-        cameraTriangle = triangle
-        cameraTriangle = navmesh.constrain cameraLocation, cameraTriangle
-        cameraAltitude = (plane.distance cameraTriangle.plane, cameraLocation) - 4
-        if cameraAltitude < 0
-            vector.multiply.byScalar cameraTriangle.plane.normal, -cameraAltitude, offset
-            vector.add.vector offset, cameraLocation, cameraLocation
-        
-        ik.lookAt cameraLocation, cameraTarget, cameraSide, cameraTransform
-        matrix.invert cameraTransform, cameraTransform
         
         matrix.applyToVector playerPoseNew.torso, [-1.5, -2.5, 0], start
         matrix.getX playerPoseNew.torso, xAxis
@@ -366,14 +360,11 @@ redraw the scene.
         matrix.rotateY (misc.interpolate headYawPreviousTick, headYaw, progress), playerPoseNew.head, true
         
         if firstDraw
-            matrix.copy entityTransformToDraw, entityTransformPreviousDraw
-            matrix.copy cameraTransform, cameraTransformPreviousDraw
+            matrix.copy cameraTransformToDraw, cameraTransformPreviousDraw
             pose.copy playerPoseNew, playerPoseOld
-            vector.copy cameraTarget, cameraTargetPreviousDraw
-            vector.copy cameraLocation, cameraLocationPreviousDraw
             firstDraw = false
             
-        context.begin 0, 0, context.width, context.height, 1, cameraTransformPreviousDraw, cameraTransform, 0.1, 0.5, 0.9
+        context.begin 0, 0, context.width, context.height, 1, cameraTransformPreviousDraw, cameraTransformToDraw, 0.1, 0.5, 0.9
         cloud.draw testMap
         cloud.draw character, playerPoseOld, playerPoseNew
         
