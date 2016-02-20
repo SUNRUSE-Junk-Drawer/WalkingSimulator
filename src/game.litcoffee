@@ -94,6 +94,7 @@ all.
     
     yaw = 0
     pitch = 0
+    headYawPreviousTick = headYaw = 0
     
     stick = [0, 0, 0]
     stickAngle = 0
@@ -198,8 +199,16 @@ all.
         vector.multiply.byScalar yAxis, torsoAltitude, torsoTranslation
         vector.add.vector torsoTranslation, translation, torsoTranslation
         
-        yaw = misc.interpolateAngle yaw, stickAngle, 0.2, yaw
+        yaw = misc.interpolateAngle yaw, stickAngle, 0.1, yaw
         matrix.rotateY yaw, torsoTransform, true
+        
+        # Calculating the head angle relative to the torso is complicated by the
+        # stick angle being wrapped to 0...2PI, so we have to shift it out of
+        # that range to clamp it.
+        headYawPreviousTick = headYaw
+        headYaw = Math.max Math.PI - 1, Math.min Math.PI + 1, misc.wrapAngle Math.PI + stickAngle - yaw
+        headYaw -= Math.PI
+        headYaw = misc.interpolateAngle headYawPreviousTick, headYaw, 0.4, headYaw
         
         matrix.getZ torsoTransform, torsoZAxis # TODO: If the entity transform is ever non-identity at startup we'll need to initialize torsoTransform for this to be right in the first ticks.
         matrix.getX torsoTransform, torsoXAxis # TODO: If the entity transform is ever non-identity at startup we'll need to initialize torsoTransform for this to be right in the first ticks.
@@ -261,6 +270,10 @@ redraw the scene.
         
         matrix.applyToVector playerPoseNew.torso, [1.5, -2.5, 0], start
         ik.computeLimb start, rightFoot, 10, xAxis, playerPoseNew.legRightUpper, playerPoseNew.legRightLower
+        
+        matrix.copy playerPoseNew.torso, playerPoseNew.head
+        matrix.translate [0, 6, 0], playerPoseNew.head, true
+        matrix.rotateY (misc.interpolate headYawPreviousTick, headYaw, progress), playerPoseNew.head, true
         
         if firstDraw
             matrix.copy entityTransformToDraw, entityTransformPreviousDraw
