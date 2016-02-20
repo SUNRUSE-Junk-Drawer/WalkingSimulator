@@ -14,7 +14,7 @@ module to update the game state.
     navmesh = require "./navmesh.litcoffee"
     vector = require "./vector.litcoffee"
     pose = require "./pose.litcoffee"
-    computeLimb = require "./computeLimb.litcoffee"
+    ik = require "./ik.litcoffee"
        
     triangle = undefined
     
@@ -255,10 +255,10 @@ redraw the scene.
         
         matrix.applyToVector playerPoseNew.torso, [-1.5, -2.5, 0], start
         matrix.getX playerPoseNew.torso, xAxis
-        computeLimb start, leftFoot, 10, xAxis, playerPoseNew.legLeftUpper, playerPoseNew.legLeftLower
+        ik.computeLimb start, leftFoot, 10, xAxis, playerPoseNew.legLeftUpper, playerPoseNew.legLeftLower
         
         matrix.applyToVector playerPoseNew.torso, [1.5, -2.5, 0], start
-        computeLimb start, rightFoot, 10, xAxis, playerPoseNew.legRightUpper, playerPoseNew.legRightLower
+        ik.computeLimb start, rightFoot, 10, xAxis, playerPoseNew.legRightUpper, playerPoseNew.legRightLower
         
         if firstDraw
             matrix.copy entityTransformToDraw, entityTransformPreviousDraw

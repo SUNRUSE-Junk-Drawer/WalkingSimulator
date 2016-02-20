@@ -1,14 +1,4 @@
-Given:
-
-- A vector locating the start of the limb.
-- A vector locating the end of the limb.
-- The length of the limb when fully extended.
-- A vector pointing perpendicular to the bend direction.
-- A matrix to store the transform for the start half of the limb.
-- A matrix to store the transform for the end half of the limb.
-
-Writes to the output matrices to generate transforms for the top and bottom
-halves of a limb to fill the gap between the start and end locations.
+#ik
 
     matrix = require "./matrix.litcoffee"
     vector = require "./vector.litcoffee"
@@ -19,6 +9,13 @@ halves of a limb to fill the gap between the start and end locations.
     midpoint = []
     joint = []
     sideNormal2 = []
+    
+## lookAt
+
+- A vector specifying where to place the origin.
+- A vector specifying (globally) where the transform's Z axis should point.
+- A vector pointing (locally) where the transform's X axis should point.
+- A matrix to populate with the transform computed.
     
     lookAt = (start, end, sideNormal, transform) ->
         vector.subtract.vector end, start, startEndDifference
@@ -40,7 +37,19 @@ halves of a limb to fill the gap between the start and end locations.
         transform[10] = startEndNormal[2]
         matrix.translate start, transform
     
-    module.exports = (start, end, targetLength, sideNormal, startTransform, endTransform) ->
+## computeLimb
+
+- A vector specifying where the limb runs from.
+- A vector specifying where the limb runs to.
+- A number specifying the total length of the limb.
+- A vector pointing (locally) where the X axis of the limb should point.
+- A matrix to populate with the transform for the first half of the limb.
+- A matrix to populate with the transform for the second half of the limb.
+
+If the limb is asked to extend further than physically possible, it will fully
+extend and leave a gap.
+    
+    computeLimb = (start, end, targetLength, sideNormal, startTransform, endTransform) ->
         vector.subtract.vector end, start, startEndDifference
         realLength = vector.normalize startEndDifference, startEndNormal
         
@@ -63,3 +72,5 @@ halves of a limb to fill the gap between the start and end locations.
             
             lookAt start, joint, sideNormal, startTransform
             lookAt joint, end, sideNormal, endTransform
+            
+    module.exports = { lookAt, computeLimb }
