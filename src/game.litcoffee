@@ -13,10 +13,13 @@ module to update the game state.
     misc = require "./misc.litcoffee"
     navmesh = require "./navmesh.litcoffee"
     vector = require "./vector.litcoffee"
+    pose = require "./pose.litcoffee"
+    computeLimb = require "./computeLimb.litcoffee"
        
     triangle = undefined
     
-    testEntity = testMap = testNavmesh = undefined
+    character = testMap = testNavmesh = undefined
+    characterData = require "./characters/test/cloud.coffee"
 
 # load
 Called before the first "tick"/"draw" to load any resources needed by the game.
@@ -25,8 +28,8 @@ Execute the argument when you have finished successfully.
     load = (callback) ->
         keyboard()
         context.load()
-        cloud.load (require "./testEntity.msc"), (testEntity_) ->
-            testEntity = testEntity_
+        cloud.load characterData, (character_) ->
+            character = character_
             cloud.load (require "./tracks/test/geometry.msc"), (testMap_) ->
                 testMap = testMap_
                 navmesh.load (require "./tracks/test/navmesh.msn"), (testNavmesh_) ->
@@ -52,6 +55,9 @@ all.
     entityTransformPreviousDraw = []
     matrix.identity entityTransform
     
+    playerPoseOld = pose.create characterData
+    playerPoseNew = pose.create characterData
+    
     torsoTransform = []
     torsoTransformToDraw = []
     torsoTransformPreviousTick = []
@@ -76,6 +82,14 @@ all.
     targetVelocity = []
     torsoTranslation = []
     
+    start = []
+    leftFoot = []
+    rightFoot = []
+    walked = 0
+    shuffleTicks = 0
+    foot = "left"
+    offset = []
+    
     yaw = 0
     pitch = 0
     
@@ -84,12 +98,13 @@ all.
     
     edgeCallback = (edge) -> vector.flatten velocity, edge.plane.normal, velocity
     
-    tick = ->    
+    tick = ->        
         if not firstTick
             matrix.copy entityTransform, entityTransformPreviousTick
             matrix.copy torsoTransform, torsoTransformPreviousTick
             
-        matrix.translate velocity, entityTransform        
+        matrix.translate velocity, entityTransform  
+        walked += vector.magnitude velocity
         
         stick[0] = gamepad.right - gamepad.left
         stick[1] = gamepad.forward - gamepad.backward
@@ -179,6 +194,26 @@ all.
         matrix.rotateZ (0.1 * vector.dot torsoXAxis, velocity), torsoTransform, true
         
         matrix.setTranslation torsoTranslation, torsoTransform
+        
+        if walked < 5
+            shuffleTicks--
+        while walked > 5 or shuffleTicks < 0
+            shuffleTicks = 5
+            walked -= 5
+            if (not inDeadzone) or ((vector.magnitudeSquared velocity) > 0.1)
+                vector.normalize velocity, offset
+                vector.multiply.byScalar offset, 5, offset
+            else
+                offset[0] = offset[1] = offset[2] = 0
+            foot = switch foot
+                when "left"
+                    matrix.applyToVector playerPoseNew.torso, [-2, -10, 0], leftFoot
+                    vector.add.vector offset, leftFoot, leftFoot
+                    "right"
+                when "right"
+                    matrix.applyToVector playerPoseNew.torso, [2, -10, 0], rightFoot
+                    vector.add.vector offset, rightFoot, rightFoot
+                    "left"
     
         if firstTick
             matrix.copy entityTransform, entityTransformPreviousTick
@@ -191,26 +226,35 @@ Called with the progress through the current frame (a number between 0 and 1) to
 redraw the scene.
   
     draw = (progress) ->     
-
+    
         if not firstDraw
             matrix.copy entityTransformToDraw, entityTransformPreviousDraw
             matrix.copy cameraTransform, cameraTransformPreviousDraw
             matrix.copy torsoTransformToDraw, torsoTransformPreviousDraw
+            pose.copy playerPoseNew, playerPoseOld
         
         matrix.interpolate entityTransformPreviousTick, entityTransform, progress, entityTransformToDraw
-        matrix.interpolate torsoTransformPreviousTick, torsoTransform, progress, torsoTransformToDraw
+        matrix.interpolate torsoTransformPreviousTick, torsoTransform, progress, playerPoseNew.torso
         
         matrix.invert entityTransformToDraw, cameraTransform
         matrix.translate [0,-10, 10], cameraTransform
         
+        matrix.applyToVector playerPoseNew.torso, [-1.5, -2.5, 0], start
+        matrix.getX playerPoseNew.torso, xAxis
+        computeLimb start, leftFoot, 10, xAxis, playerPoseNew.legLeftUpper, playerPoseNew.legLeftLower
+        
+        matrix.applyToVector playerPoseNew.torso, [1.5, -2.5, 0], start
+        computeLimb start, rightFoot, 10, xAxis, playerPoseNew.legRightUpper, playerPoseNew.legRightLower
+        
         if firstDraw
             matrix.copy entityTransformToDraw, entityTransformPreviousDraw
             matrix.copy cameraTransform, cameraTransformPreviousDraw
+            pose.copy playerPoseNew, playerPoseOld
             firstDraw = false
             
         context.begin 0, 0, context.width, context.height, 1, cameraTransformPreviousDraw, cameraTransform, 0.1, 0.5, 0.9
         cloud.draw testMap
-        cloud.draw testEntity, torsoTransformPreviousDraw, torsoTransformToDraw
+        cloud.draw character, playerPoseOld, playerPoseNew
         
         return
         
