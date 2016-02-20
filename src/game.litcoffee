@@ -87,9 +87,17 @@ all.
     start = []
     leftFoot = []
     rightFoot = []
+    leftHand = []
+    leftHandPreviousTick = []
+    leftHandToDraw = []
+    rightHand = []
+    rightHandPreviousTick = []
+    rightHandToDraw = []
     walked = 0
     shuffleTicks = 0
     foot = "left"
+    ticksSinceLeft = 0
+    ticksSinceRight = 0
     offset = []
     
     yaw = 0
@@ -105,6 +113,8 @@ all.
         if not firstTick
             matrix.copy entityTransform, entityTransformPreviousTick
             matrix.copy torsoTransform, torsoTransformPreviousTick
+            vector.copy leftHand, leftHandPreviousTick
+            vector.copy rightHand, rightHandPreviousTick
             
         matrix.translate velocity, entityTransform  
         speed = vector.magnitude velocity
@@ -212,14 +222,15 @@ all.
         
         matrix.getZ torsoTransform, torsoZAxis # TODO: If the entity transform is ever non-identity at startup we'll need to initialize torsoTransform for this to be right in the first ticks.
         matrix.getX torsoTransform, torsoXAxis # TODO: If the entity transform is ever non-identity at startup we'll need to initialize torsoTransform for this to be right in the first ticks.
-        pitch = misc.interpolate pitch, (0.5 * stickLength - 0.1 * vector.dot torsoZAxis, velocity), 0.2
+        pitch = misc.interpolate pitch, (0.5 * stickLength - 0.1 * vector.dot torsoZAxis, velocity), 0.4
         matrix.rotateX pitch, torsoTransform, true
         matrix.rotateZ (0.1 * vector.dot torsoXAxis, velocity), torsoTransform, true
         
         matrix.setTranslation torsoTranslation, torsoTransform
         
-        if walked < 5
-            shuffleTicks--
+        shuffleTicks--
+        ticksSinceLeft++
+        ticksSinceRight++
         while walked > 5 or shuffleTicks < 0
             shuffleTicks = 5
             walked -= 5
@@ -233,17 +244,51 @@ all.
                     matrix.applyToVector playerPoseNew.torso, [-2, -10, 0], leftFoot
                     vector.add.vector offset, leftFoot, leftFoot
                     plane.project triangle.plane, leftFoot, leftFoot
+                    ticksSinceLeft = 0
                     "right"
                 when "right"
                     matrix.applyToVector playerPoseNew.torso, [2, -10, 0], rightFoot
                     vector.add.vector offset, rightFoot, rightFoot
                     plane.project triangle.plane, rightFoot, rightFoot
+                    ticksSinceRight = 0
                     "left"
-    
+        
+        if inDeadzone
+            leftHand[0] = -6
+            rightHand[0] = 6
+            leftHand[1] = rightHand[1] = -4
+            leftHand[2] = rightHand[2] = 0
+        else
+            yScale = 7 / (1 + speed)
+            rightHand[0] = 2 + (Math.min 4, speed)
+            leftHand[0] = -rightHand[0]
+            
+            leftHand[1] = rightHand[1] = 3
+            motion = Math.pow (Math.cos ticksSinceLeft * 0.25) * 0.5 + 0.5, 4
+            leftHand[1] += yScale * motion
+            leftHand[2] = 1.5 + 6 * stickLength * motion
+            motion = Math.pow (Math.cos ticksSinceRight * 0.25) * 0.5 + 0.5, 4
+            rightHand[1] += yScale * motion
+            rightHand[2] = 1.5 + 6 * stickLength * motion
+            
+        matrix.applyToVector torsoTransform, leftHand, leftHand                
+        matrix.applyToVector torsoTransform, rightHand, rightHand
+        
+        leftHand[1] -= 2
+        rightHand[1] -= 2
+        
         if firstTick
             matrix.copy entityTransform, entityTransformPreviousTick
             matrix.copy torsoTransform, torsoTransformPreviousTick
+            vector.copy leftHand, leftHandPreviousTick
+            vector.copy rightHand, rightHandPreviousTick
             firstTick = false
+            
+        lag = 0.15 + 0.4 / (1 + speed / 3)
+        if inDeadzone then lag = 0.2
+        vector.interpolate leftHandPreviousTick, leftHand, lag, leftHand
+        vector.interpolate rightHandPreviousTick, rightHand, lag, rightHand
+            
         return
   
 # draw
@@ -270,6 +315,21 @@ redraw the scene.
         
         matrix.applyToVector playerPoseNew.torso, [1.5, -2.5, 0], start
         ik.computeLimb start, rightFoot, 10, xAxis, playerPoseNew.legRightUpper, playerPoseNew.legRightLower
+
+        matrix.getY playerPoseNew.torso, yAxis
+        vector.negate xAxis, xAxis
+        vector.interpolate xAxis, yAxis, 0.05, offset
+        
+        matrix.applyToVector playerPoseNew.torso, [-1.5, 4, 0], start
+        vector.interpolate leftHandPreviousTick, leftHand, progress, leftHandToDraw
+        ik.computeLimb start, leftHandToDraw, 10, offset, playerPoseNew.armLeftUpper, playerPoseNew.armLeftLower
+        
+        vector.negate yAxis, yAxis
+        vector.interpolate xAxis, yAxis, 0.05, offset
+
+        matrix.applyToVector playerPoseNew.torso, [1.5, 4, 0], start
+        vector.interpolate rightHandPreviousTick, rightHand, progress, rightHandToDraw
+        ik.computeLimb start, rightHandToDraw, 10, offset, playerPoseNew.armRightUpper, playerPoseNew.armRightLower
         
         matrix.copy playerPoseNew.torso, playerPoseNew.head
         matrix.translate [0, 6, 0], playerPoseNew.head, true
