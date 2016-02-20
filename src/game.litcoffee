@@ -68,6 +68,12 @@ all.
 
     cameraTransform = []
     cameraTransformPreviousDraw = []
+    cameraLocation = []
+    cameraLocationPreviousDraw = []
+    cameraTarget = []
+    cameraTargetPreviousDraw = []
+    cameraSide = []
+    cameraSidePreviousDraw = [0, 0, 1]
     matrix.identity cameraTransform
     
     torsoAltitude = 0
@@ -302,12 +308,36 @@ redraw the scene.
             matrix.copy cameraTransform, cameraTransformPreviousDraw
             matrix.copy torsoTransformToDraw, torsoTransformPreviousDraw
             pose.copy playerPoseNew, playerPoseOld
+            vector.copy cameraTarget, cameraTargetPreviousDraw
+            vector.copy cameraLocation, cameraLocationPreviousDraw
         
         matrix.interpolate entityTransformPreviousTick, entityTransform, progress, entityTransformToDraw
         matrix.interpolate torsoTransformPreviousTick, torsoTransform, progress, playerPoseNew.torso
         
-        matrix.invert entityTransformToDraw, cameraTransform
-        matrix.translate [0,-10, 10], cameraTransform
+        matrix.getY entityTransformToDraw, yAxis
+        matrix.getZ entityTransformToDraw, zAxis
+        matrix.getTranslation entityTransformToDraw, cameraTarget
+        vector.multiply.byScalar yAxis, 18, offset
+        vector.add.vector cameraTarget, offset, cameraTarget
+        vector.multiply.byScalar zAxis, -20, offset
+        vector.add.vector cameraTarget, offset, cameraLocation
+        
+        vector.interpolate cameraTargetPreviousDraw, cameraTarget, 0.1, cameraTarget
+        vector.interpolate cameraLocationPreviousDraw, cameraLocation, 0.1, cameraLocation
+        
+        matrix.getX entityTransformToDraw, cameraSide
+        vector.interpolate cameraSidePreviousDraw, cameraSide, 0.1, cameraSide
+        vector.copy cameraSide, cameraSidePreviousDraw
+        
+        cameraTriangle = triangle
+        cameraTriangle = navmesh.constrain cameraLocation, cameraTriangle
+        cameraAltitude = (plane.distance cameraTriangle.plane, cameraLocation) - 4
+        if cameraAltitude < 0
+            vector.multiply.byScalar cameraTriangle.plane.normal, -cameraAltitude, offset
+            vector.add.vector offset, cameraLocation, cameraLocation
+        
+        ik.lookAt cameraLocation, cameraTarget, cameraSide, cameraTransform
+        matrix.invert cameraTransform, cameraTransform
         
         matrix.applyToVector playerPoseNew.torso, [-1.5, -2.5, 0], start
         matrix.getX playerPoseNew.torso, xAxis
@@ -339,6 +369,8 @@ redraw the scene.
             matrix.copy entityTransformToDraw, entityTransformPreviousDraw
             matrix.copy cameraTransform, cameraTransformPreviousDraw
             pose.copy playerPoseNew, playerPoseOld
+            vector.copy cameraTarget, cameraTargetPreviousDraw
+            vector.copy cameraLocation, cameraLocationPreviousDraw
             firstDraw = false
             
         context.begin 0, 0, context.width, context.height, 1, cameraTransformPreviousDraw, cameraTransform, 0.1, 0.5, 0.9
