@@ -93,13 +93,35 @@ the "scale" property scales the matrix by those scaling factors.
             output[index] *= vector[2] for index in [8...12]
             return
 
-Given a vector specifying a translation and a matrix to translate, calling the 
-"translate" property applies that translation to that matrix.
+# translate
+
+- A vector to translate by.
+- A matrix to translate.
+- When truthy, the translation is applied in local space, otherwise it is 
+  applied in global space.
             
-        translate: (vector, output) ->
-            output[3] += vector[0]
-            output[7] += vector[1]
-            output[11] += vector[2]
+        translate: (v, output, local) ->
+            if local
+                tempVectorX[0] = output[0]
+                tempVectorX[1] = output[1]
+                tempVectorX[2] = output[2]
+
+                tempVectorY[0] = output[4]
+                tempVectorY[1] = output[5]
+                tempVectorY[2] = output[6]
+                
+                tempVectorZ[0] = output[8]
+                tempVectorZ[1] = output[9]
+                tempVectorZ[2] = output[10]
+                
+                tempVector[0] = vector.dot tempVectorX, v
+                tempVector[1] = vector.dot tempVectorY, v
+                tempVector[2] = vector.dot tempVectorZ, v
+                module.exports.translate tempVector, output
+            else
+                output[3] += v[0]
+                output[7] += v[1]
+                output[11] += v[2]
             return
             
 Given a matrix, X, Y, Z and W values (defaulting to 0, 0, 0 and 1 respectively
