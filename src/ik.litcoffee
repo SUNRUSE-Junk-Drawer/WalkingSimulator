@@ -36,6 +36,7 @@
         transform[6] = startEndNormal[1]
         transform[10] = startEndNormal[2]
         matrix.translate start, transform
+        return
     
 ## computeLimb
 
@@ -72,5 +73,6 @@ extend and leave a gap.
             
             lookAt start, joint, sideNormal, startTransform
             lookAt joint, end, sideNormal, endTransform
+        return
             
     module.exports = { lookAt, computeLimb }
