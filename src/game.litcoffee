@@ -106,7 +106,9 @@ all.
             matrix.copy torsoTransform, torsoTransformPreviousTick
             
         matrix.translate velocity, entityTransform  
-        walked += vector.magnitude velocity
+        speed = vector.magnitude velocity
+        walked += speed
+        moving = speed > 2
         
         stick[0] = gamepad.right - gamepad.left
         stick[1] = gamepad.forward - gamepad.backward
@@ -190,7 +192,7 @@ all.
         
         matrix.copy entityTransform, torsoTransform
         
-        torsoAltitude = misc.interpolate torsoAltitude, (if not inDeadzone then 10 else 12), 0.4
+        torsoAltitude = misc.interpolate torsoAltitude, (12 - Math.min 2, (speed + if inDeadzone then 0 else 1.5)), 0.4
         
         matrix.getY entityTransform, yAxis
         vector.multiply.byScalar yAxis, torsoAltitude, torsoTranslation
@@ -212,7 +214,7 @@ all.
         while walked > 5 or shuffleTicks < 0
             shuffleTicks = 5
             walked -= 5
-            if (not inDeadzone) or ((vector.magnitudeSquared velocity) > 0.1)
+            if (not inDeadzone) or moving
                 vector.normalize velocity, offset
                 vector.multiply.byScalar offset, 5, offset
             else
