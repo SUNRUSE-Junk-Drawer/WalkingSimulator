@@ -4,12 +4,14 @@ This module is used to run the main event loop.  Please see the "game" module
 for details.
 
     # Required for Webpack to include the stylesheet in the HTML.
-	require "./index.sass"
-	
-	addEventListener "load", ->
-		game = require "./game.litcoffee"
-	
-		game.load ->
+    require "./index.sass"
+    
+    addEventListener "load", ->
+        (require "./input/keyboard.litcoffee")()
+    
+        game = require "./game.litcoffee"
+    
+        game.load ->
             lastTimestamp = undefined
             tickProgress = 0
             
