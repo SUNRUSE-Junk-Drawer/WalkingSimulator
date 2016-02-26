@@ -45,13 +45,12 @@ following arguments:
         postScale: [1, 1]
         transforms: [[],[]]
             
-        begin: (left, bottom, width, height, zoom, oldTransform, newTransform, red, green, blue) ->
+        begin: (left, bottom, width, height, zoom, oldTransform, newTransform) ->
             gl = module.exports.context
             gl.viewport left, bottom, width, height
             gl.enable gl.SCISSOR_TEST
             gl.scissor left, bottom, width, height
-            gl.clearColor red, green, blue, 1
-            gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
+            gl.clear gl.DEPTH_BUFFER_BIT
             gl.disable gl.SCISSOR_TEST
             
             matrix.copy oldTransform, module.exports.transforms[0]
