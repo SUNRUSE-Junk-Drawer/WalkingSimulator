@@ -155,4 +155,30 @@ walls and returns the new containing navmesh triangle.
                 
         triangle
         
-    module.exports = { load, constrain }
+## findNearest
+
+- A navmesh instance.
+- A vector specifying a point in 3D space.
+
+Returns the navmesh triangle which is "best" to start in for that location.
+
+    findNearest = (navmesh, location) ->
+        best = null
+        bestDistance = -Infinity
+        for triangle in navmesh
+            distance = plane.distance triangle.plane, location
+            if bestDistance >= 0 and distance <= 0 then continue
+            bestWallDistance = Infinity
+            for edge in triangle.edges
+                wallDistance = Math.max 0, plane.distance edge.plane, location
+                if wallDistance > bestWallDistance then continue
+                bestWallDistance = wallDistance
+            behind = distance < 0
+            distance = distance * distance + bestWallDistance * bestWallDistance
+            if distance >= Math.abs bestDistance then continue
+            if behind then distance = -distance
+            bestDistance = distance
+            best = triangle
+        best
+        
+    module.exports = { load, constrain, findNearest }
