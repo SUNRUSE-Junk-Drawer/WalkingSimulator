@@ -6,3 +6,5 @@ This exports an object, where keys are control names and values are numbers from
         right: 0
         forward: 0
         backward: 0
+        up: 0
+        down: 0
