@@ -18,6 +18,7 @@ uniform mat4 oldTransform;
 
 uniform vec2 postScale;
 varying vec2 var_uv;
+varying vec2 var_noiseUv;
 varying vec3 var_color;
 
 vec3 applyTransform(mat4 transform) {
@@ -48,4 +49,7 @@ void main() {
 		gl_Position = vec4((mix(oldOrigin.xy, newOrigin.xy, uv.x) + local * subTransform) * postScale, -1.0, mix(oldOrigin.z, newOrigin.z, uv.x));
         var_uv = var_uv * subTransform;
 	}
+    
+    // Create some UVs for the noise texture which vary depending upon the location of the splat.
+    var_noiseUv = var_uv + vec2(dot(origin, vec3(5.8, -6.4, 3.4)), dot(origin, vec3(-9.6, 2.6, 5.8)));
 }
