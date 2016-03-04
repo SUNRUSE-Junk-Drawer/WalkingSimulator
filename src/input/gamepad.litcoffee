@@ -1,5 +1,5 @@
 This exports an object, where keys are control names and values are numbers from
-0 to 1 representing state.
+0 to 1 representing state.  These are not, however, clamped to this range.
 
     module.exports = 
         left: 0
