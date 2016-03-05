@@ -49,6 +49,23 @@ object containing:
 + splats: The number of splats in this bone.
 + transform: The transform applied to the object in Blender.
 
+## Exporting geometry from Blender
+
+A Python export script is included for generating "MSG" files.  To install it:
+
+- File -> User Preferences -> Add Ons
+- At the bottom, click "Install from File..."
+- Select the "blenderMSG.py" file in the "tools" directory of this repository.
+- Type "MSG" into the search box in the top left corner of the window.
+- Check the tickbox which appears in the top right corner of the 
+  "Import-Export: MSG" row.
+
+This script will export every selected meshs' triangles' locations and vertex
+colours.  To use it, go to File -> Export -> MasSplat Geometry (.msg)  
+
+Any modifiers or transforms will be applied before export.  You should 
+triangulate your meshes before export.  Y and Z will be automatically swapped.
+
 ## Exporting navmeshes from Blender
 
 A Python export script is included for generating "MSN" files.  To install it:

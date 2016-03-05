@@ -29,6 +29,9 @@ module.exports =
                 ,
                     test: /\.msn$/
                     loader: "file-loader"
+                ,
+                    test: /\.msg$/
+                    loader: "file-loader"
             ]
     plugins: [
                 new (require "clean-webpack-plugin") "dist",
