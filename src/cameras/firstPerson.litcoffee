@@ -10,7 +10,7 @@ A camera instance is an object containing:
     navmesh = require "./../navmesh.litcoffee"
     misc = require "./../misc.litcoffee"
     plane = require "./../plane.litcoffee"
-    
+
 ## create
 
 - An object equivalent to the "gamepad" module.
@@ -36,12 +36,12 @@ Returns a new camera instance.
         interpolatedLocation: []
         transform: []
         transformPreviousDraw: []
-        
+
         firstTick: true
         firstDraw: true
-        
+
         triangle: navmesh.findNearest navmeshInstance, location
-        
+
         gamepad: gamepad
         pitch: pitch
         yaw: yaw
@@ -50,7 +50,7 @@ Returns a new camera instance.
         speed: speed
         yawSpeed: yawSpeed
         pitchSpeed: pitchSpeed
-        
+
         height: height
 
 ## tick
@@ -62,25 +62,29 @@ Returns a new camera instance.
             vector.copy cameraInstance.location, cameraInstance.previousLocation
             cameraInstance.previousYaw = cameraInstance.yaw
             cameraInstance.previousPitch = cameraInstance.pitch
-            
-        cameraInstance.yaw += (cameraInstance.gamepad.right - cameraInstance.gamepad.left) * cameraInstance.yawSpeed
-        
+
+        cameraInstance.yaw += (cameraInstance.gamepad.turnRight - cameraInstance.gamepad.turnLeft) * cameraInstance.yawSpeed
+
         cameraInstance.pitch += (cameraInstance.gamepad.down - cameraInstance.gamepad.up) * cameraInstance.pitchSpeed
         cameraInstance.pitch = Math.min (Math.PI / 2), Math.max (Math.PI / -2), cameraInstance.pitch
-        
+
         forward = (cameraInstance.gamepad.forward - cameraInstance.gamepad.backward) * cameraInstance.speed
         cameraInstance.location[0] += (Math.sin cameraInstance.yaw) * forward
         cameraInstance.location[2] += (Math.cos cameraInstance.yaw) * forward
-        
+
+        side = (cameraInstance.gamepad.right - cameraInstance.gamepad.left) * cameraInstance.speed
+        cameraInstance.location[0] += (Math.cos cameraInstance.yaw) * side
+        cameraInstance.location[2] -= (Math.sin cameraInstance.yaw) * side
+
         cameraInstance.triangle = navmesh.constrain cameraInstance.location, cameraInstance.triangle
         plane.project cameraInstance.triangle.plane, cameraInstance.location, cameraInstance.location
-        
+
         if cameraInstance.firstTick
             vector.copy cameraInstance.location, cameraInstance.previousLocation
             cameraInstance.firstTick = false
-        
+
         return
-            
+
 ## preDraw
 
 - A camera instance.
@@ -92,20 +96,20 @@ Returns a new camera instance.
     preDraw = (cameraInstance, progress) ->
         if not cameraInstance.firstDraw
             matrix.copy cameraInstance.transform, cameraInstance.transformPreviousDraw
-        
+
         matrix.identity cameraInstance.transform
-        
+
         vector.interpolate cameraInstance.previousLocation, cameraInstance.location, progress, interpolatedLocation
         interpolatedLocation[1] += cameraInstance.height
         vector.negate interpolatedLocation, interpolatedLocation
         matrix.translate interpolatedLocation, cameraInstance.transform
-        
+
         matrix.rotateY (misc.interpolate cameraInstance.previousYaw, cameraInstance.yaw, progress), cameraInstance.transform
-        
+
         matrix.rotateX (misc.interpolate cameraInstance.previousPitch, cameraInstance.pitch, progress), cameraInstance.transform
-        
+
         matrix.translate [0, 0, 0], cameraInstance.transform
-        
+
         if cameraInstance.firstDraw
             matrix.copy cameraInstance.transform, cameraInstance.transformPreviousDraw
             cameraInstance.firstDraw = false
