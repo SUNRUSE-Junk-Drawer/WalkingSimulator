@@ -65,7 +65,7 @@ Returns a new camera instance.
 
         cameraInstance.yaw += (cameraInstance.gamepad.turnRight - cameraInstance.gamepad.turnLeft) * cameraInstance.yawSpeed
 
-        cameraInstance.pitch += (cameraInstance.gamepad.down - cameraInstance.gamepad.up) * cameraInstance.pitchSpeed
+        cameraInstance.pitch += (cameraInstance.gamepad.up - cameraInstance.gamepad.down) * cameraInstance.pitchSpeed
         cameraInstance.pitch = Math.min (Math.PI / 2), Math.max (Math.PI / -2), cameraInstance.pitch
 
         forward = (cameraInstance.gamepad.forward - cameraInstance.gamepad.backward) * cameraInstance.speed
