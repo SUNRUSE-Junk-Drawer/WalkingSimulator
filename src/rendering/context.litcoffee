@@ -15,6 +15,7 @@ The "width" and "height" properties are the dimensions of the viewport in pixels
             module.exports.canvas = (document.getElementsByTagName "canvas")[0]
             module.exports.context = module.exports.canvas.getContext "experimental-webgl", 
                 antialias: false
+                alpha: false
             if not module.exports.context then handleError "Failed to open a WebGL context"
             
             resize = ->
